@@ -5,8 +5,9 @@
   "description": "Plataforma web Motion Lab para el Personal Trainer Matías: Onboarding, pagos, rutinas en 3 bloques y seguimiento interactivo",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
+    "postinstall": "prisma generate",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push"
   },
