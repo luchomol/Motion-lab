@@ -63,7 +63,16 @@ export default function StudentHub({
       {/* ================================================================
           TARJETA HERO: SUGERIDO PARA HOY (O SEMANA CUMPLIDA)
          ================================================================ */}
-      {todosCompletados ? (
+      {planSemanal.length === 0 ? (
+        <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-[#0a1818] to-[#05070c] border border-slate-800 rounded-3xl p-6 sm:p-7 shadow-2xl">
+          <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight mb-2">
+            No tienes rutinas activas
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-300 font-medium leading-relaxed">
+            Actualmente no tienes un plan de entrenamiento asignado. Por favor, contacta con tu entrenador Matías para que te asigne tus próximos días de entrenamiento.
+          </p>
+        </div>
+      ) : todosCompletados ? (
         <div className="relative overflow-hidden bg-gradient-to-br from-emerald-950/40 via-[#0a1818] to-[#05070c] border-2 border-emerald-500/40 rounded-3xl p-6 sm:p-7 shadow-2xl shadow-emerald-500/10">
           <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500 text-slate-950 text-xs font-black uppercase tracking-wider w-max mb-4">
             <Trophy className="w-4 h-4 fill-current" />
@@ -152,19 +161,20 @@ export default function StudentHub({
       {/* ================================================================
           CRONOGRAMA SEMANAL (LISTA COMPLETA DE DÍAS)
          ================================================================ */}
-      <div className="space-y-4">
-        
-        <div className="flex items-center justify-between px-1">
-          <div>
-            <h3 className="text-lg font-black text-white flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-sky-400" />
-              <span>Cronograma Semanal de Entrenamientos</span>
-            </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Puedes saltar al día que quieras, editar los días completados o recuperar los pendientes:
-            </p>
+      {planSemanal.length > 0 && (
+        <div className="space-y-4">
+          
+          <div className="flex items-center justify-between px-1">
+            <div>
+              <h3 className="text-lg font-black text-white flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-sky-400" />
+                <span>Cronograma Semanal de Entrenamientos</span>
+              </h3>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Puedes saltar al día que quieras, editar los días completados o recuperar los pendientes:
+              </p>
+            </div>
           </div>
-        </div>
 
         <div className="space-y-3">
           {planSemanal.map((dia) => {
@@ -283,8 +293,8 @@ export default function StudentHub({
             );
           })}
         </div>
-
       </div>
+      )}
 
     </div>
   );

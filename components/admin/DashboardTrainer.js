@@ -498,15 +498,13 @@ export default function DashboardTrainer() {
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({
                         alumnoId: alumnoSeleccionado.id,
-                        nombre: rutinaArmada.nombre,
-                        descripcion: rutinaArmada.descripcion,
-                        bloques: rutinaArmada.bloques,
+                        dias: rutinaArmada.dias,
                       }),
                     });
 
                     const data = await res.json();
                     if (data.success) {
-                      mostrarAviso(`¡Rutina "${rutinaArmada.nombre}" asignada con éxito!`);
+                      mostrarAviso(`¡Rutina multi-día asignada con éxito!`);
                       setModalAbierto(false);
                       cargarAlumnos();
                     }
