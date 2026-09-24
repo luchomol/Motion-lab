@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { Plus, Trash2, Video, X, Save, PlayCircle, Calendar } from 'lucide-react';
 
-export default function RoutineBuilder({ alumno, onCancel, onSave }) {
-  const [dias, setDias] = useState([
+export default function RoutineBuilder({ alumno, initialDias, onCancel, onSave }) {
+  const [dias, setDias] = useState(initialDias || [
     {
       id: crypto.randomUUID(),
       nombre: 'Día 1: Entrenamiento',
@@ -48,6 +48,18 @@ export default function RoutineBuilder({ alumno, onCancel, onSave }) {
     const nuevosDias = dias.filter((_, i) => i !== index);
     setDias(nuevosDias);
     setDiaActivoIndex(Math.max(0, index - 1));
+  };
+
+  const clonarDia = (index) => {
+    const diaAClonar = dias[index];
+    // Hacer una copia profunda del día
+    const diaClonado = JSON.parse(JSON.stringify(diaAClonar));
+    diaClonado.id = crypto.randomUUID();
+    diaClonado.nombre = `${diaClonado.nombre} (Copia)`;
+    
+    const nuevosDias = [...dias, diaClonado];
+    setDias(nuevosDias);
+    setDiaActivoIndex(nuevosDias.length - 1);
   };
 
   const updateDia = (campo, valor) => {
@@ -158,6 +170,13 @@ export default function RoutineBuilder({ alumno, onCancel, onSave }) {
         >
           <Plus className="w-3.5 h-3.5" />
           Añadir Día
+        </button>
+        <button
+          onClick={() => clonarDia(diaActivoIndex)}
+          className="flex items-center gap-1.5 whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold border border-dashed border-emerald-700/50 text-emerald-500/70 hover:text-emerald-400 hover:border-emerald-500/50 transition-all bg-emerald-900/10 ml-2"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          Clonar Activo
         </button>
       </div>
 

@@ -27,11 +27,84 @@ export default function DashboardTrainer() {
   const [filtro, setFiltro] = useState('TODOS'); // 'TODOS', 'PENDIENTES', 'ACTIVOS'
   const [busqueda, setBusqueda] = useState('');
   
-  // Alumno seleccionado para ver perfil o asignarle rutina
   const [alumnoSeleccionado, setAlumnoSeleccionado] = useState(null);
   const [modalAbierto, setModalAbierto] = useState(false);
   const [guardandoRutina, setGuardandoRutina] = useState(false);
   const [notificacion, setNotificacion] = useState('');
+  
+  const [rutinaActivaAlumno, setRutinaActivaAlumno] = useState(null);
+  const [cargandoRutina, setCargandoRutina] = useState(false);
+  const [mostrarConstructor, setMostrarConstructor] = useState(false);
+  
+  const [diasParaConstructor, setDiasParaConstructor] = useState(null);
+  const [cargandoImportacion, setCargandoImportacion] = useState(false);
+  const [importKey, setImportKey] = useState('new');
+
+  const abrirModalAlumno = async (alumno) => {
+    setAlumnoSeleccionado(alumno);
+    setRutinaActivaAlumno(null);
+    setMostrarConstructor(false);
+    setDiasParaConstructor(null);
+    setImportKey('new');
+    setModalAbierto(true);
+    setCargandoRutina(true);
+
+    try {
+      const res = await fetch(`/api/rutinas?alumnoId=${alumno.id}`);
+      const data = await res.json();
+      if (data.success && data.planSemanal && data.planSemanal.length > 0) {
+        setRutinaActivaAlumno(data.planSemanal);
+      } else {
+        setMostrarConstructor(true);
+      }
+    } catch(err) {
+      console.error(err);
+      setMostrarConstructor(true);
+    } finally {
+      setCargandoRutina(false);
+    }
+  };
+
+  const handleImportarRutina = async (alumnoFuenteId) => {
+    if (!alumnoFuenteId) return;
+    setCargandoImportacion(true);
+    try {
+      const res = await fetch(`/api/rutinas?alumnoId=${alumnoFuenteId}`);
+      const data = await res.json();
+      if (data.success && data.planSemanal && data.planSemanal.length > 0) {
+        // Transformar data.planSemanal al formato de dias que espera RoutineBuilder
+        const diasClonados = data.planSemanal.map(dia => {
+          return {
+            id: crypto.randomUUID(),
+            nombre: dia.nombre,
+            descripcion: dia.enfoque,
+            bloques: dia.bloques.map(b => ({
+              tipo: b.tipo,
+              orden: b.orden,
+              ejercicios: b.ejercicios.map(ej => ({
+                nombre: ej.nombre,
+                seriesCount: ej.series?.length || 3,
+                repsCount: ej.series?.[0]?.repsRealizadas || 10,
+                indicacionProfe: ej.indicacionProfe || '',
+                videoUrl: ej.videoUrl || '',
+                videoRecomendacion: ej.videoRecomendacion || '',
+                mostrarVideoInput: !!ej.videoUrl
+              }))
+            }))
+          };
+        });
+        setDiasParaConstructor(diasClonados);
+        setImportKey(crypto.randomUUID());
+        mostrarAviso('Rutina importada con éxito. Puedes modificarla antes de guardar.');
+      } else {
+        mostrarAviso('El alumno seleccionado no tiene una rutina activa para copiar.');
+      }
+    } catch(err) {
+      console.error(err);
+    } finally {
+      setCargandoImportacion(false);
+    }
+  };
 
   // Estructura de la rutina a crear (3 bloques estrictos)
   const [nuevaRutina, setNuevaRutina] = useState({
@@ -376,10 +449,7 @@ export default function DashboardTrainer() {
                       {/* COLUMNA 5: ACCIONES */}
                       <td className="py-4 px-6 text-right">
                         <button
-                          onClick={() => {
-                            setAlumnoSeleccionado(alumno);
-                            setModalAbierto(true);
-                          }}
+                          onClick={() => abrirModalAlumno(alumno)}
                           className="inline-flex items-center gap-1.5 py-2 px-3.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs transition-all shadow-md shadow-sky-500/20"
                         >
                           <Eye className="w-3.5 h-3.5" />
@@ -476,45 +546,110 @@ export default function DashboardTrainer() {
               </div>
             )}
 
-            {/* SECCIÓN 2: ASIGNACIÓN DE RUTINA INTERACTIVA (3 BLOQUES) */}
+            {/* SECCIÓN 2: ESTADO ACTUAL Y ASIGNACIÓN DE RUTINA */}
             <div className="pt-2 border-t border-slate-800">
-              <div className="mb-4">
-                <h3 className="text-base font-extrabold text-white">
-                  Constructor de Rutinas
-                </h3>
-                <p className="text-xs text-slate-400">
-                  Diseña paso a paso la rutina interactiva de este alumno.
-                </p>
-              </div>
+              {cargandoRutina ? (
+                <div className="text-center py-10">
+                  <div className="w-8 h-8 rounded-full border-4 border-sky-500 border-t-transparent animate-spin mx-auto mb-3" />
+                  <p className="text-slate-400 text-xs">Cargando información de rutinas...</p>
+                </div>
+              ) : rutinaActivaAlumno && !mostrarConstructor ? (
+                <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                    <div>
+                      <h3 className="text-base font-extrabold text-white flex items-center gap-2">
+                        <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                        Plan Semanal Asignado
+                      </h3>
+                      <p className="text-xs text-slate-400 mt-1">Este alumno ya tiene un plan en curso.</p>
+                    </div>
+                    <button
+                      onClick={() => setMostrarConstructor(true)}
+                      className="px-4 py-2 rounded-xl bg-sky-500/10 text-sky-400 hover:bg-sky-500/20 text-xs font-bold transition-colors border border-sky-500/20"
+                    >
+                      Reemplazar / Asignar Nueva
+                    </button>
+                  </div>
+                  
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {rutinaActivaAlumno.map(dia => (
+                      <div key={dia.id} className="p-4 bg-slate-950 rounded-xl border border-slate-800">
+                        <div className="font-bold text-sm text-white mb-1">Día {dia.numeroDia}: {dia.nombre}</div>
+                        <div className="text-xs text-slate-400">{dia.enfoque || 'Sin descripción'}</div>
+                        <div className="text-[10px] font-bold text-sky-400 mt-2 uppercase">
+                          {dia.bloquesCount} Bloques • {dia.ejerciciosCount} Ejercicios
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="mb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                    <div>
+                      <h3 className="text-base font-extrabold text-white">
+                        Constructor de Rutinas
+                      </h3>
+                      <p className="text-xs text-slate-400">
+                        Diseña paso a paso la rutina o importa una existente.
+                      </p>
+                    </div>
+                    
+                    {/* Selector de importación */}
+                    <div className="flex items-center gap-2">
+                      <select 
+                        className="bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded-xl px-3 py-2 outline-none focus:border-sky-500 max-w-[200px]"
+                        onChange={(e) => handleImportarRutina(e.target.value)}
+                        defaultValue=""
+                        disabled={cargandoImportacion}
+                      >
+                        <option value="" disabled>Copiar rutina de...</option>
+                        {alumnos
+                          .filter(a => a.id !== alumnoSeleccionado.id)
+                          .map(a => (
+                            <option key={a.id} value={a.id}>{a.nombre} {a.apellido || ''}</option>
+                          ))
+                        }
+                      </select>
+                      {cargandoImportacion && <div className="w-4 h-4 border-2 border-sky-500 border-t-transparent rounded-full animate-spin"></div>}
+                    </div>
+                  </div>
 
-              <RoutineBuilder 
-                alumno={alumnoSeleccionado}
-                onCancel={() => setModalAbierto(false)}
-                onSave={async (rutinaArmada) => {
-                  setGuardandoRutina(true);
-                  try {
-                    const res = await fetch('/api/rutinas', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({
-                        alumnoId: alumnoSeleccionado.id,
-                        dias: rutinaArmada.dias,
-                      }),
-                    });
+                  <RoutineBuilder 
+                    key={importKey}
+                    alumno={alumnoSeleccionado}
+                    initialDias={diasParaConstructor}
+                    onCancel={() => {
+                      if (rutinaActivaAlumno) setMostrarConstructor(false);
+                      else setModalAbierto(false);
+                    }}
+                    onSave={async (rutinaArmada) => {
+                      setGuardandoRutina(true);
+                      try {
+                        const res = await fetch('/api/rutinas', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            alumnoId: alumnoSeleccionado.id,
+                            dias: rutinaArmada.dias,
+                          }),
+                        });
 
-                    const data = await res.json();
-                    if (data.success) {
-                      mostrarAviso(`¡Rutina multi-día asignada con éxito!`);
-                      setModalAbierto(false);
-                      cargarAlumnos();
-                    }
-                  } catch (err) {
-                    console.error('Error al asignar rutina:', err);
-                  } finally {
-                    setGuardandoRutina(false);
-                  }
-                }}
-              />
+                        const data = await res.json();
+                        if (data.success) {
+                          mostrarAviso(`¡Rutina multi-día asignada con éxito!`);
+                          setModalAbierto(false);
+                          cargarAlumnos();
+                        }
+                      } catch (err) {
+                        console.error('Error al asignar rutina:', err);
+                      } finally {
+                        setGuardandoRutina(false);
+                      }
+                    }}
+                  />
+                </>
+              )}
             </div>
 
           </div>
