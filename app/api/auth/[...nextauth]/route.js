@@ -129,8 +129,8 @@ export const authOptions = {
   },
 
   pages: {
-    signIn: '/onboarding',
-    error: '/onboarding',
+    signIn: '/login',
+    error: '/login',
   },
 
   secret: process.env.NEXTAUTH_SECRET || 'motion_lab_super_secret_jwt_key_2026',

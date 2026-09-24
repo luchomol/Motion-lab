@@ -504,6 +504,8 @@ export async function POST(request) {
                 create: bloque.ejercicios.map((ej) => ({
                   nombre: ej.nombre,
                   indicacionProfe: ej.indicacionProfe,
+                  videoUrl: ej.videoUrl,
+                  videoRecomendacion: ej.videoRecomendacion,
                   rirObjetivo: ej.rirObjetivo ? parseInt(ej.rirObjetivo) : null,
                   series: {
                     create: (ej.series || []).map((s, idxSerie) => ({

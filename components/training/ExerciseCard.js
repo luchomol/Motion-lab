@@ -216,19 +216,38 @@ export default function ExerciseCard({ ejercicio, onUpdateEjercicio }) {
 
       {/* Título y objetivo de Matías */}
       <div className="mb-6">
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <h4 className="text-xl font-black text-white">{ejercicio.nombre}</h4>
-          {todasCompletadas && (
-            <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-              Completado
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            {ejercicio.videoUrl && (
+              <a
+                href={ejercicio.videoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold transition-colors border border-red-500/20"
+              >
+                <span>▶ Ver Video</span>
+              </a>
+            )}
+            {todasCompletadas && (
+              <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                Completado
+              </span>
+            )}
+          </div>
         </div>
 
         {ejercicio.indicacionProfe && (
           <p className="text-sm font-semibold text-sky-400 mt-2 flex items-start gap-2 bg-blue-900/20 p-3 rounded-xl border border-blue-500/20">
             <span className="shrink-0">🎯</span>
             <span>Objetivo de Matías: {ejercicio.indicacionProfe}</span>
+          </p>
+        )}
+        
+        {ejercicio.videoRecomendacion && (
+          <p className="text-xs font-medium text-slate-300 mt-2 flex items-start gap-2 bg-slate-800/50 p-3 rounded-xl border border-slate-700">
+            <span className="shrink-0">💡</span>
+            <span>Tip del video: {ejercicio.videoRecomendacion}</span>
           </p>
         )}
       </div>

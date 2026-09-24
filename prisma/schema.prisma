@@ -194,24 +194,24 @@ model Bloque {
   @@map("bloques")
 }
 
-// ========================================================================
-// MODELO: EjercicioRealizado (Pertenece a un Bloque)
-// ========================================================================
 model EjercicioRealizado {
-  id              String   @id @default(cuid())
-  bloqueId        String
-  bloque          Bloque   @relation(fields: [bloqueId], references: [id], onDelete: Cascade)
+  id                 String   @id @default(cuid())
+  bloqueId           String
+  bloque             Bloque   @relation(fields: [bloqueId], references: [id], onDelete: Cascade)
 
-  nombre          String   // Ej. "Sentadilla Trasera con Barra"
-  indicacionProfe String?  // Ej. "3x8 | RIR Objetivo: 2 | Tempo 3010"
-  rirObjetivo     Int?     // Repeticiones en reserva sugeridas por el profe
+  nombre             String   // Ej. "Sentadilla Trasera con Barra"
+  indicacionProfe    String?  // Ej. "3x8 | RIR Objetivo: 2 | Tempo 3010"
+  rirObjetivo        Int?     // Repeticiones en reserva sugeridas por el profe
+  
+  videoUrl           String?  @db.Text // Link de YouTube o URL de video
+  videoRecomendacion String?  @db.Text // Recomendaciones a tener en cuenta en el video
   
   // Campo clave de UX: Notas y observaciones del alumno al entrenar
-  observacion     String?  @db.Text
-  completado      Boolean  @default(false)
+  observacion        String?  @db.Text
+  completado         Boolean  @default(false)
 
   // En el bloque de Desarrollo, el ejercicio se divide en series
-  series          Serie[]
+  series             Serie[]
 
   @@map("ejercicios_realizados")
 }

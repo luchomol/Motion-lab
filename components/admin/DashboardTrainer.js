@@ -19,6 +19,7 @@ import {
   Users, CheckCircle2, Clock, Dumbbell, ShieldCheck, 
   Search, Eye, Plus, Trash2, ArrowRight, X, Sparkles, Activity 
 } from 'lucide-react';
+import RoutineBuilder from './RoutineBuilder';
 
 export default function DashboardTrainer() {
   const [alumnos, setAlumnos] = useState([]);
@@ -475,121 +476,47 @@ export default function DashboardTrainer() {
               </div>
             )}
 
-            {/* SECCIÓN 2: ASIGNACIÓN DE RUTINA EN 3 BLOQUES */}
-            <div className="space-y-4 pt-2 border-t border-slate-800">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-base font-extrabold text-white">
-                    Estructura de Rutina para Asignar
-                  </h3>
-                  <p className="text-xs text-slate-400">
-                    Dividida estrictamente en: Movilidad, Activación y Desarrollo.
-                  </p>
-                </div>
+            {/* SECCIÓN 2: ASIGNACIÓN DE RUTINA INTERACTIVA (3 BLOQUES) */}
+            <div className="pt-2 border-t border-slate-800">
+              <div className="mb-4">
+                <h3 className="text-base font-extrabold text-white">
+                  Constructor de Rutinas
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Diseña paso a paso la rutina interactiva de este alumno.
+                </p>
               </div>
 
-              {/* NOMBRE DE LA RUTINA */}
-              <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">Nombre de la Sesión</label>
-                <input
-                  type="text"
-                  value={nuevaRutina.nombre}
-                  onChange={(e) => setNuevaRutina({ ...nuevaRutina, nombre: e.target.value })}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-sky-400"
-                />
-              </div>
+              <RoutineBuilder 
+                alumno={alumnoSeleccionado}
+                onCancel={() => setModalAbierto(false)}
+                onSave={async (rutinaArmada) => {
+                  setGuardandoRutina(true);
+                  try {
+                    const res = await fetch('/api/rutinas', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        alumnoId: alumnoSeleccionado.id,
+                        nombre: rutinaArmada.nombre,
+                        descripcion: rutinaArmada.descripcion,
+                        bloques: rutinaArmada.bloques,
+                      }),
+                    });
 
-              {/* LISTA DE LOS 3 BLOQUES PREVIOS */}
-              <div className="space-y-3">
-                
-                {/* BLOQUE 1: MOVILIDAD */}
-                <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-extrabold text-sky-400 uppercase tracking-wider">
-                      Bloque 1: MOVILIDAD
-                    </span>
-                    <span className="text-[10px] text-slate-500 font-medium">Control Articular (Checkbox)</span>
-                  </div>
-                  <ul className="space-y-1.5 text-xs text-slate-300">
-                    {nuevaRutina.bloques[0].ejercicios.map((ej, idx) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <span className="text-sky-400 font-bold">•</span>
-                        <div>
-                          <strong>{ej.nombre}</strong>: <span className="text-slate-400">{ej.indicacionProfe}</span>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* BLOQUE 2: ACTIVACIÓN */}
-                <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-extrabold text-cyan-400 uppercase tracking-wider">
-                      Bloque 2: ACTIVACIÓN
-                    </span>
-                    <span className="text-[10px] text-slate-500 font-medium">Series & Reps del Profe</span>
-                  </div>
-                  <ul className="space-y-1.5 text-xs text-slate-300">
-                    {nuevaRutina.bloques[1].ejercicios.map((ej, idx) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <span className="text-cyan-400 font-bold">•</span>
-                        <div>
-                          <strong>{ej.nombre}</strong>: <span className="text-slate-400">{ej.indicacionProfe}</span>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* BLOQUE 3: DESARROLLO */}
-                <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-extrabold text-amber-400 uppercase tracking-wider">
-                      Bloque 3: DESARROLLO (Crucial)
-                    </span>
-                    <span className="text-[10px] text-slate-500 font-medium">Tabla interactiva + Observaciones</span>
-                  </div>
-                  <ul className="space-y-1.5 text-xs text-slate-300">
-                    {nuevaRutina.bloques[2].ejercicios.map((ej, idx) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <span className="text-amber-400 font-bold">•</span>
-                        <div>
-                          <strong>{ej.nombre}</strong>: <span className="text-slate-400">{ej.indicacionProfe}</span>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-              </div>
-
-              {/* BOTÓN ASIGNAR */}
-              <div className="pt-4 flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setModalAbierto(false)}
-                  className="py-2.5 px-5 rounded-full text-xs font-bold text-slate-400 hover:text-white"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="button"
-                  disabled={guardandoRutina}
-                  onClick={guardarYAsignarRutina}
-                  className="py-3 px-6 rounded-full bg-sky-500 hover:bg-sky-400 text-slate-950 font-extrabold text-xs shadow-lg shadow-sky-500/25 transition-all flex items-center gap-2 disabled:opacity-50"
-                >
-                  {guardandoRutina ? (
-                    <span>Guardando en base de datos...</span>
-                  ) : (
-                    <>
-                      <span>Asignar Rutina a {alumnoSeleccionado.nombre}</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </>
-                  )}
-                </button>
-              </div>
-
+                    const data = await res.json();
+                    if (data.success) {
+                      mostrarAviso(`¡Rutina "${rutinaArmada.nombre}" asignada con éxito!`);
+                      setModalAbierto(false);
+                      cargarAlumnos();
+                    }
+                  } catch (err) {
+                    console.error('Error al asignar rutina:', err);
+                  } finally {
+                    setGuardandoRutina(false);
+                  }
+                }}
+              />
             </div>
 
           </div>

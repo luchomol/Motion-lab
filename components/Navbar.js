@@ -10,7 +10,7 @@
  */
 
 import { useState } from 'react';
-import { Menu, X, Flame, Dumbbell, ShieldAlert, UserPlus, ArrowRight } from 'lucide-react';
+import { Menu, X, Flame, Dumbbell, ShieldAlert, UserPlus, ArrowRight, LogIn } from 'lucide-react';
 import Link from 'next/link';
 import MotionLabLogo from './MotionLabLogo';
 
@@ -54,12 +54,18 @@ export default function Navbar() {
           </div>
 
           {/* BOTÓN CALL TO ACTION (AZUL ELÉCTRICO) */}
-          <div className="hidden sm:block">
+          <div className="hidden sm:flex items-center gap-4">
             <Link
-              href="/onboarding"
+              href="/login"
+              className="text-slate-300 hover:text-white text-sm font-bold transition-colors flex items-center gap-1"
+            >
+              Iniciar Sesión
+            </Link>
+            <Link
+              href="/#planes"
               className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-black uppercase tracking-wider text-white bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-500 hover:to-sky-400 rounded-full transition-all shadow-lg shadow-blue-500/25 hover:scale-105"
             >
-              <span>Comenzar Ahora</span>
+              <span>Ver Planes</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -83,12 +89,12 @@ export default function Navbar() {
       {menuAbierto && (
         <div className="lg:hidden bg-[#0a0f1d] border-b border-slate-800 px-4 pt-3 pb-6 space-y-3 shadow-2xl">
           <Link
-            href="/onboarding"
+            href="/login"
             onClick={() => setMenuAbierto(false)}
             className="block text-base font-bold text-sky-400 py-2 flex items-center gap-2"
           >
-            <UserPlus className="w-5 h-5" />
-            <span>Onboarding Nuevo Alumno</span>
+            <LogIn className="w-5 h-5" />
+            <span>Iniciar Sesión</span>
           </Link>
           <Link
             href="/entrenamiento"
@@ -111,15 +117,15 @@ export default function Navbar() {
             onClick={() => setMenuAbierto(false)}
             className="block text-base font-medium text-slate-300 hover:text-sky-400 py-2"
           >
-            Planes y Precios
+            Planes y Membresías
           </a>
           <div className="pt-2">
             <Link
-              href="/onboarding"
+              href="/#planes"
               onClick={() => setMenuAbierto(false)}
               className="w-full block text-center py-3 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-sky-500 rounded-xl"
             >
-              Comenzar Onboarding
+              Ver Planes
             </Link>
           </div>
         </div>

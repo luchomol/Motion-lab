@@ -57,13 +57,12 @@ export default function PricingSection() {
                 Ideal para alumnos que conocen la técnica básica y solo necesitan una rutina estructurada y científicamente periodizada para progresar por su cuenta.
               </p>
 
-              {/* Precio */}
+              {/* Texto Oculto / Sin Precios */}
               <div className="mt-6 mb-8 pb-6 border-b border-slate-800">
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl sm:text-5xl font-black text-white">$29.99</span>
-                  <span className="text-slate-400 text-sm font-medium">/ mes</span>
-                </div>
-                <span className="text-xs text-slate-500 block mt-1">Renovación mensual sin ataduras</span>
+                <p className="text-slate-300 text-sm">
+                  Los valores y métodos de pago se coordinan de forma personalizada según tu país de residencia.
+                </p>
+                <span className="text-xs text-slate-500 block mt-2">Renovación mensual sin ataduras</span>
               </div>
 
               {/* Beneficios */}
@@ -91,10 +90,12 @@ export default function PricingSection() {
             </div>
 
             <a
-              href="/onboarding"
+              href={getLinkPlan('Plan Base')}
+              target="_blank"
+              rel="noopener noreferrer"
               className="w-full py-4 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm text-center border border-slate-700 transition-all block hover:scale-[1.02]"
             >
-              Comenzar Plan Base (Onboarding)
+              Consultar por WhatsApp
             </a>
           </div>
 
@@ -123,13 +124,12 @@ export default function PricingSection() {
                 El laboratorio completo para ti. Planificación ajustada a tu anatomía, horarios y equipamiento con revisión de técnica diaria y contacto 24/7.
               </p>
 
-              {/* Precio */}
+              {/* Texto Oculto / Sin Precios */}
               <div className="mt-6 mb-8 pb-6 border-b border-slate-800">
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl sm:text-5xl font-black text-amber-400">$69.99</span>
-                  <span className="text-slate-400 text-sm font-medium">/ mes</span>
-                </div>
-                <span className="text-xs text-amber-500/80 block mt-1">Cupos limitados para garantizar máxima precisión</span>
+                <p className="text-slate-300 text-sm">
+                  Los valores y métodos de pago se coordinan de forma personalizada según tu país de residencia.
+                </p>
+                <span className="text-xs text-amber-500/80 block mt-2">Cupos limitados para garantizar máxima precisión</span>
               </div>
 
               {/* Beneficios */}
@@ -158,10 +158,12 @@ export default function PricingSection() {
             </div>
 
             <a
-              href="/onboarding"
+              href={getLinkPlan('Plan Premium')}
+              target="_blank"
+              rel="noopener noreferrer"
               className="w-full py-4 rounded-full bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-slate-950 font-black text-sm text-center shadow-xl shadow-amber-500/20 transition-all block hover:scale-[1.02] flex items-center justify-center gap-2"
             >
-              <span>Quiero el Plan Premium 1 a 1</span>
+              <span>Consultar por WhatsApp</span>
               <ArrowRight className="w-4 h-4 stroke-[3]" />
             </a>
           </div>
