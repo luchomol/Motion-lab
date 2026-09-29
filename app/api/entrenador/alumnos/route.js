@@ -102,3 +102,56 @@ export async function GET() {
     );
   }
 }
+
+export async function POST(req) {
+  try {
+    const data = await req.json();
+    const {
+      nombre, apellido, email, whatsapp, peso, altura, lesiones, estadoPago, tipoPlan,
+      objetivo, deporte, club, nivel, focos, disponibilidad, rmEstimado, puntosDebiles
+    } = data;
+
+    // Generar email único si no se provee
+    const finalEmail = email || `alumno-${Date.now()}@motionlab.local`;
+
+    const nuevoAlumno = await prisma.usuario.create({
+      data: {
+        nombre: nombre || 'Sin Nombre',
+        apellido: apellido || '',
+        email: finalEmail.toLowerCase().trim(),
+        whatsapp,
+        peso: peso ? parseFloat(peso) : null,
+        altura: altura ? parseFloat(altura) : null,
+        lesiones,
+        estadoPago: estadoPago || 'PENDIENTE',
+        tipoPlan: tipoPlan || 'BASE',
+        rol: 'ALUMNO',
+        perfilDeportivo: {
+          create: {
+            objetivo: objetivo || 'Rendimiento',
+            deporte: deporte || 'Fitness General',
+            club: club === 'true' || club === true,
+            nivel: nivel || 'Principiante',
+            focos: focos || 'General',
+            disponibilidad: disponibilidad || '3 días',
+            rmEstimado,
+            puntosDebiles
+          }
+        }
+      },
+      include: {
+        perfilDeportivo: true,
+        rutinasComoAlumno: {
+          where: { estado: 'ACTIVA' },
+          select: { id: true, nombre: true, fechaAsignada: true },
+        },
+      }
+    });
+
+    return NextResponse.json({ success: true, alumno: nuevoAlumno });
+  } catch (error) {
+    console.error('Error al crear alumno:', error);
+    return NextResponse.json({ success: false, error: 'Error al crear el alumno' }, { status: 500 });
+  }
+}
+

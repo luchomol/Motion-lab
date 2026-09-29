@@ -39,8 +39,61 @@ export default function DashboardTrainer() {
   const [diasParaConstructor, setDiasParaConstructor] = useState(null);
   const [cargandoImportacion, setCargandoImportacion] = useState(false);
   const [importKey, setImportKey] = useState('new');
+  
+  // Novedades: Edición y Creación de usuarios
+  const [editandoPerfil, setEditandoPerfil] = useState(false);
+  const [esNuevoUsuario, setEsNuevoUsuario] = useState(false);
+  const [formData, setFormData] = useState({
+    nombre: '', apellido: '', email: '', whatsapp: '',
+    peso: '', altura: '', lesiones: '', estadoPago: 'PENDIENTE', tipoPlan: 'BASE',
+    objetivo: 'Rendimiento', deporte: 'Fitness General', club: false,
+    nivel: 'Principiante', focos: 'General', disponibilidad: '3 días',
+    rmEstimado: '', puntosDebiles: ''
+  });
+
+  const abrirModalNuevoUsuario = () => {
+    setEsNuevoUsuario(true);
+    setEditandoPerfil(true);
+    setFormData({
+      nombre: '', apellido: '', email: '', whatsapp: '',
+      peso: '', altura: '', lesiones: '', estadoPago: 'PENDIENTE', tipoPlan: 'BASE',
+      objetivo: 'Rendimiento', deporte: 'Fitness General', club: false,
+      nivel: 'Principiante', focos: 'General', disponibilidad: '3 días',
+      rmEstimado: '', puntosDebiles: ''
+    });
+    setAlumnoSeleccionado(null);
+    setRutinaActivaAlumno(null);
+    setMostrarConstructor(false);
+    setDiasParaConstructor(null);
+    setImportKey('new');
+    setModalAbierto(true);
+  };
 
   const abrirModalAlumno = async (alumno) => {
+    setEsNuevoUsuario(false);
+    setEditandoPerfil(false);
+    
+    // Poblar formData por si quiere editar
+    setFormData({
+      nombre: alumno.nombre || '',
+      apellido: alumno.apellido || '',
+      email: alumno.email || '',
+      whatsapp: alumno.whatsapp || '',
+      peso: alumno.peso || '',
+      altura: alumno.altura || '',
+      lesiones: alumno.lesiones || '',
+      estadoPago: alumno.estadoPago || 'PENDIENTE',
+      tipoPlan: alumno.tipoPlan || 'BASE',
+      objetivo: alumno.perfilDeportivo?.objetivo || 'Rendimiento',
+      deporte: alumno.perfilDeportivo?.deporte || 'Fitness General',
+      club: alumno.perfilDeportivo?.club || false,
+      nivel: alumno.perfilDeportivo?.nivel || 'Principiante',
+      focos: alumno.perfilDeportivo?.focos || 'General',
+      disponibilidad: alumno.perfilDeportivo?.disponibilidad || '3 días',
+      rmEstimado: alumno.perfilDeportivo?.rmEstimado || '',
+      puntosDebiles: alumno.perfilDeportivo?.puntosDebiles || ''
+    });
+
     setAlumnoSeleccionado(alumno);
     setRutinaActivaAlumno(null);
     setMostrarConstructor(false);
@@ -198,6 +251,40 @@ export default function DashboardTrainer() {
     }
   };
 
+  const guardarPerfilAlumno = async () => {
+    setGuardandoRutina(true);
+    try {
+      const url = esNuevoUsuario ? '/api/entrenador/alumnos' : `/api/entrenador/alumnos/${alumnoSeleccionado.id}`;
+      const method = esNuevoUsuario ? 'POST' : 'PUT';
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        mostrarAviso(esNuevoUsuario ? 'Alumno creado exitosamente' : 'Perfil actualizado');
+        setEditandoPerfil(false);
+        if (esNuevoUsuario) {
+          setAlumnoSeleccionado(data.alumno);
+          setEsNuevoUsuario(false);
+        } else {
+          setAlumnoSeleccionado(data.alumno);
+        }
+        cargarAlumnos();
+      } else {
+        alert(data.error || 'Ocurrió un error al guardar');
+      }
+    } catch(err) {
+      console.error(err);
+      alert('Ocurrió un error de conexión');
+    } finally {
+      setGuardandoRutina(false);
+    }
+  };
+
   // Asignar rutina al alumno en el modal
   const guardarYAsignarRutina = async () => {
     if (!alumnoSeleccionado) return;
@@ -275,7 +362,14 @@ export default function DashboardTrainer() {
         </div>
 
         {/* CONTADOR RÁPIDO */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
+          <button
+            onClick={abrirModalNuevoUsuario}
+            className="flex flex-col sm:flex-row items-center gap-2 px-4 py-2.5 rounded-2xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-black transition-all shadow-md shadow-sky-500/20"
+          >
+            <Plus className="w-5 h-5" />
+            <span className="text-xs sm:text-sm">Nuevo Alumno</span>
+          </button>
           <div className="px-4 py-2.5 rounded-2xl bg-slate-900 border border-slate-800 text-center">
             <span className="text-xs text-slate-400 block font-medium">Total Alumnos</span>
             <span className="text-xl font-black text-white">{alumnos.length}</span>
@@ -469,7 +563,7 @@ export default function DashboardTrainer() {
       {/* ================================================================
           MODAL: FICHA DEL ALUMNO Y ASIGNADOR DE RUTINA EN 3 BLOQUES
          ================================================================ */}
-      {modalAbierto && alumnoSeleccionado && (
+      {modalAbierto && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto animate-fadeIn">
           <div className="bg-[#0b1220] border border-slate-800 rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 shadow-2xl relative">
             
@@ -482,175 +576,270 @@ export default function DashboardTrainer() {
             </button>
 
             {/* CABECERA MODAL */}
-            <div className="mb-6 pb-4 border-b border-slate-800">
-              <span className="text-xs font-bold uppercase tracking-wider text-sky-400">
-                Ficha Técnica del Alumno
-              </span>
-              <h2 className="text-2xl font-black text-white mt-1">
-                {alumnoSeleccionado.nombre} {alumnoSeleccionado.apellido || ''}
-              </h2>
-              <p className="text-xs text-slate-400">
-                Email: {alumnoSeleccionado.email} • WhatsApp: {alumnoSeleccionado.whatsapp || 'No indicado'}
-              </p>
+            <div className="mb-6 pb-4 border-b border-slate-800 flex justify-between items-start">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-sky-400">
+                  {esNuevoUsuario ? 'Nuevo Alumno' : 'Ficha Técnica del Alumno'}
+                </span>
+                <h2 className="text-2xl font-black text-white mt-1">
+                  {esNuevoUsuario ? 'Crear Perfil' : `${alumnoSeleccionado?.nombre} ${alumnoSeleccionado?.apellido || ''}`}
+                </h2>
+                {!esNuevoUsuario && (
+                  <p className="text-xs text-slate-400 mt-1">
+                    Email: {alumnoSeleccionado?.email} • WhatsApp: {alumnoSeleccionado?.whatsapp || 'No indicado'}
+                  </p>
+                )}
+              </div>
+              {!esNuevoUsuario && (
+                <button
+                  onClick={() => setEditandoPerfil(!editandoPerfil)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                    editandoPerfil 
+                      ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' 
+                      : 'bg-slate-800 text-slate-300 hover:text-white'
+                  }`}
+                >
+                  {editandoPerfil ? 'Cancelar Edición' : 'Editar Ficha'}
+                </button>
+              )}
             </div>
 
-            {/* SECCIÓN 1: DATOS BIOMÉTRICOS Y OBJETIVOS */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-              <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                <span className="text-[10px] text-slate-400 uppercase font-bold">Peso Corporal</span>
-                <div className="text-base font-black text-white">
-                  {alumnoSeleccionado.peso ? `${alumnoSeleccionado.peso} kg` : 'N/D'}
+            {/* SECCIÓN 1: DATOS Y OBJETIVOS */}
+            {editandoPerfil ? (
+              <div className="mb-6 space-y-4 bg-slate-900/50 p-6 rounded-2xl border border-slate-800">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] text-slate-400 uppercase font-bold mb-1">Nombre</label>
+                    <input type="text" value={formData.nombre} onChange={e => setFormData({...formData, nombre: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-sky-500" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] text-slate-400 uppercase font-bold mb-1">Apellido</label>
+                    <input type="text" value={formData.apellido} onChange={e => setFormData({...formData, apellido: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-sky-500" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] text-slate-400 uppercase font-bold mb-1">Email</label>
+                    <input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-sky-500" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] text-slate-400 uppercase font-bold mb-1">WhatsApp</label>
+                    <input type="text" value={formData.whatsapp} onChange={e => setFormData({...formData, whatsapp: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-sky-500" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] text-slate-400 uppercase font-bold mb-1">Peso (kg)</label>
+                    <input type="number" step="0.1" value={formData.peso} onChange={e => setFormData({...formData, peso: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-sky-500" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] text-slate-400 uppercase font-bold mb-1">Altura (cm)</label>
+                    <input type="number" value={formData.altura} onChange={e => setFormData({...formData, altura: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-sky-500" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] text-slate-400 uppercase font-bold mb-1">Objetivo</label>
+                    <select value={formData.objetivo} onChange={e => setFormData({...formData, objetivo: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-sky-500">
+                      <option value="Rendimiento">Rendimiento</option>
+                      <option value="Estética">Estética</option>
+                      <option value="Salud">Salud</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] text-slate-400 uppercase font-bold mb-1">Nivel</label>
+                    <select value={formData.nivel} onChange={e => setFormData({...formData, nivel: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-sky-500">
+                      <option value="Principiante">Principiante</option>
+                      <option value="Intermedio">Intermedio</option>
+                      <option value="Avanzado">Avanzado</option>
+                    </select>
+                  </div>
                 </div>
-              </div>
-              <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                <span className="text-[10px] text-slate-400 uppercase font-bold">Altura</span>
-                <div className="text-base font-black text-white">
-                  {alumnoSeleccionado.altura ? `${alumnoSeleccionado.altura} cm` : 'N/D'}
-                </div>
-              </div>
-              <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                <span className="text-[10px] text-slate-400 uppercase font-bold">Objetivo</span>
-                <div className="text-base font-black text-sky-400">
-                  {alumnoSeleccionado.perfilDeportivo?.objetivo || 'Rendimiento'}
-                </div>
-              </div>
-              <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                <span className="text-[10px] text-slate-400 uppercase font-bold">Nivel</span>
-                <div className="text-base font-black text-white">
-                  {alumnoSeleccionado.perfilDeportivo?.nivel || 'Principiante'}
-                </div>
-              </div>
-            </div>
 
-            {/* LESIONES O RM SI EXISTEN */}
-            {(alumnoSeleccionado.lesiones || alumnoSeleccionado.perfilDeportivo?.rmEstimado) && (
-              <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs mb-6 space-y-1.5">
-                {alumnoSeleccionado.lesiones && (
-                  <div>
-                    <strong className="text-amber-400">⚠️ Lesiones reportadas:</strong>{' '}
-                    <span className="text-slate-300">{alumnoSeleccionado.lesiones}</span>
-                  </div>
-                )}
-                {alumnoSeleccionado.perfilDeportivo?.rmEstimado && (
-                  <div>
-                    <strong className="text-amber-400">⚡ RMs informadas:</strong>{' '}
-                    <span className="text-slate-300">{alumnoSeleccionado.perfilDeportivo.rmEstimado}</span>
-                  </div>
-                )}
-                {alumnoSeleccionado.perfilDeportivo?.puntosDebiles && (
-                  <div>
-                    <strong className="text-amber-400">🎯 Puntos débiles a enfocar:</strong>{' '}
-                    <span className="text-slate-300">{alumnoSeleccionado.perfilDeportivo.puntosDebiles}</span>
-                  </div>
-                )}
+                <div>
+                  <label className="block text-[10px] text-slate-400 uppercase font-bold mb-1">Deporte</label>
+                  <input type="text" value={formData.deporte} onChange={e => setFormData({...formData, deporte: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-sky-500" />
+                </div>
+                
+                <div>
+                  <label className="block text-[10px] text-slate-400 uppercase font-bold mb-1">Lesiones</label>
+                  <textarea value={formData.lesiones} onChange={e => setFormData({...formData, lesiones: e.target.value})} rows={2} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-sky-500" />
+                </div>
+                <div>
+                  <label className="block text-[10px] text-slate-400 uppercase font-bold mb-1">RM Estimado</label>
+                  <input type="text" value={formData.rmEstimado} onChange={e => setFormData({...formData, rmEstimado: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-sky-500" />
+                </div>
+                <div>
+                  <label className="block text-[10px] text-slate-400 uppercase font-bold mb-1">Puntos Débiles</label>
+                  <textarea value={formData.puntosDebiles} onChange={e => setFormData({...formData, puntosDebiles: e.target.value})} rows={2} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-sky-500" />
+                </div>
+
+                <div className="pt-4 flex justify-end">
+                  <button
+                    onClick={guardarPerfilAlumno}
+                    disabled={guardandoRutina}
+                    className="px-6 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-sm transition-all shadow-md disabled:opacity-50"
+                  >
+                    {guardandoRutina ? 'Guardando...' : (esNuevoUsuario ? 'Crear Alumno' : 'Guardar Cambios')}
+                  </button>
+                </div>
               </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                  <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
+                    <span className="text-[10px] text-slate-400 uppercase font-bold">Peso Corporal</span>
+                    <div className="text-base font-black text-white">
+                      {alumnoSeleccionado?.peso ? `${alumnoSeleccionado.peso} kg` : 'N/D'}
+                    </div>
+                  </div>
+                  <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
+                    <span className="text-[10px] text-slate-400 uppercase font-bold">Altura</span>
+                    <div className="text-base font-black text-white">
+                      {alumnoSeleccionado?.altura ? `${alumnoSeleccionado.altura} cm` : 'N/D'}
+                    </div>
+                  </div>
+                  <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
+                    <span className="text-[10px] text-slate-400 uppercase font-bold">Objetivo</span>
+                    <div className="text-base font-black text-sky-400">
+                      {alumnoSeleccionado?.perfilDeportivo?.objetivo || 'Rendimiento'}
+                    </div>
+                  </div>
+                  <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
+                    <span className="text-[10px] text-slate-400 uppercase font-bold">Nivel</span>
+                    <div className="text-base font-black text-white">
+                      {alumnoSeleccionado?.perfilDeportivo?.nivel || 'Principiante'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* LESIONES O RM SI EXISTEN */}
+                {(alumnoSeleccionado?.lesiones || alumnoSeleccionado?.perfilDeportivo?.rmEstimado) && (
+                  <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs mb-6 space-y-1.5">
+                    {alumnoSeleccionado?.lesiones && (
+                      <div>
+                        <strong className="text-amber-400">⚠️ Lesiones reportadas:</strong>{' '}
+                        <span className="text-slate-300">{alumnoSeleccionado.lesiones}</span>
+                      </div>
+                    )}
+                    {alumnoSeleccionado?.perfilDeportivo?.rmEstimado && (
+                      <div>
+                        <strong className="text-amber-400">⚡ RMs informadas:</strong>{' '}
+                        <span className="text-slate-300">{alumnoSeleccionado.perfilDeportivo.rmEstimado}</span>
+                      </div>
+                    )}
+                    {alumnoSeleccionado?.perfilDeportivo?.puntosDebiles && (
+                      <div>
+                        <strong className="text-amber-400">🎯 Puntos débiles a enfocar:</strong>{' '}
+                        <span className="text-slate-300">{alumnoSeleccionado.perfilDeportivo.puntosDebiles}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
             )}
 
             {/* SECCIÓN 2: ESTADO ACTUAL Y ASIGNACIÓN DE RUTINA */}
-            <div className="pt-2 border-t border-slate-800">
-              {cargandoRutina ? (
-                <div className="text-center py-10">
-                  <div className="w-8 h-8 rounded-full border-4 border-sky-500 border-t-transparent animate-spin mx-auto mb-3" />
-                  <p className="text-slate-400 text-xs">Cargando información de rutinas...</p>
-                </div>
-              ) : rutinaActivaAlumno && !mostrarConstructor ? (
-                <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-                    <div>
-                      <h3 className="text-base font-extrabold text-white flex items-center gap-2">
-                        <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                        Plan Semanal Asignado
-                      </h3>
-                      <p className="text-xs text-slate-400 mt-1">Este alumno ya tiene un plan en curso.</p>
-                    </div>
-                    <button
-                      onClick={() => setMostrarConstructor(true)}
-                      className="px-4 py-2 rounded-xl bg-sky-500/10 text-sky-400 hover:bg-sky-500/20 text-xs font-bold transition-colors border border-sky-500/20"
-                    >
-                      Reemplazar / Asignar Nueva
-                    </button>
+            {!esNuevoUsuario && (
+              <div className="pt-2 border-t border-slate-800">
+                {cargandoRutina ? (
+                  <div className="text-center py-10">
+                    <div className="w-8 h-8 rounded-full border-4 border-sky-500 border-t-transparent animate-spin mx-auto mb-3" />
+                    <p className="text-slate-400 text-xs">Cargando información de rutinas...</p>
                   </div>
-                  
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    {rutinaActivaAlumno.map(dia => (
-                      <div key={dia.id} className="p-4 bg-slate-950 rounded-xl border border-slate-800">
-                        <div className="font-bold text-sm text-white mb-1">Día {dia.numeroDia}: {dia.nombre}</div>
-                        <div className="text-xs text-slate-400">{dia.enfoque || 'Sin descripción'}</div>
-                        <div className="text-[10px] font-bold text-sky-400 mt-2 uppercase">
-                          {dia.bloquesCount} Bloques • {dia.ejerciciosCount} Ejercicios
-                        </div>
+                ) : rutinaActivaAlumno && !mostrarConstructor ? (
+                  <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                      <div>
+                        <h3 className="text-base font-extrabold text-white flex items-center gap-2">
+                          <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                          Plan Semanal Asignado
+                        </h3>
+                        <p className="text-xs text-slate-400 mt-1">Este alumno ya tiene un plan en curso.</p>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <div className="mb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-                    <div>
-                      <h3 className="text-base font-extrabold text-white">
-                        Constructor de Rutinas
-                      </h3>
-                      <p className="text-xs text-slate-400">
-                        Diseña paso a paso la rutina o importa una existente.
-                      </p>
+                      <button
+                        onClick={() => setMostrarConstructor(true)}
+                        className="px-4 py-2 rounded-xl bg-sky-500/10 text-sky-400 hover:bg-sky-500/20 text-xs font-bold transition-colors border border-sky-500/20"
+                      >
+                        Reemplazar / Asignar Nueva
+                      </button>
                     </div>
                     
-                    {/* Selector de importación */}
-                    <div className="flex items-center gap-2">
-                      <select 
-                        className="bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded-xl px-3 py-2 outline-none focus:border-sky-500 max-w-[200px]"
-                        onChange={(e) => handleImportarRutina(e.target.value)}
-                        defaultValue=""
-                        disabled={cargandoImportacion}
-                      >
-                        <option value="" disabled>Copiar rutina de...</option>
-                        {alumnos
-                          .filter(a => a.id !== alumnoSeleccionado.id)
-                          .map(a => (
-                            <option key={a.id} value={a.id}>{a.nombre} {a.apellido || ''}</option>
-                          ))
-                        }
-                      </select>
-                      {cargandoImportacion && <div className="w-4 h-4 border-2 border-sky-500 border-t-transparent rounded-full animate-spin"></div>}
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {rutinaActivaAlumno.map(dia => (
+                        <div key={dia.id} className="p-4 bg-slate-950 rounded-xl border border-slate-800">
+                          <div className="font-bold text-sm text-white mb-1">Día {dia.numeroDia}: {dia.nombre}</div>
+                          <div className="text-xs text-slate-400">{dia.enfoque || 'Sin descripción'}</div>
+                          <div className="text-[10px] font-bold text-sky-400 mt-2 uppercase">
+                            {dia.bloquesCount} Bloques • {dia.ejerciciosCount} Ejercicios
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
+                ) : (
+                  <>
+                    <div className="mb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                      <div>
+                        <h3 className="text-base font-extrabold text-white">
+                          Constructor de Rutinas
+                        </h3>
+                        <p className="text-xs text-slate-400">
+                          Diseña paso a paso la rutina o importa una existente.
+                        </p>
+                      </div>
+                      
+                      {/* Selector de importación */}
+                      <div className="flex items-center gap-2">
+                        <select 
+                          className="bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded-xl px-3 py-2 outline-none focus:border-sky-500 max-w-[200px]"
+                          onChange={(e) => handleImportarRutina(e.target.value)}
+                          defaultValue=""
+                          disabled={cargandoImportacion}
+                        >
+                          <option value="" disabled>Copiar rutina de...</option>
+                          {alumnos
+                            .filter(a => a.id !== alumnoSeleccionado?.id)
+                            .map(a => (
+                              <option key={a.id} value={a.id}>{a.nombre} {a.apellido || ''}</option>
+                            ))
+                          }
+                        </select>
+                        {cargandoImportacion && <div className="w-4 h-4 border-2 border-sky-500 border-t-transparent rounded-full animate-spin"></div>}
+                      </div>
+                    </div>
 
-                  <RoutineBuilder 
-                    key={importKey}
-                    alumno={alumnoSeleccionado}
-                    initialDias={diasParaConstructor}
-                    onCancel={() => {
-                      if (rutinaActivaAlumno) setMostrarConstructor(false);
-                      else setModalAbierto(false);
-                    }}
-                    onSave={async (rutinaArmada) => {
-                      setGuardandoRutina(true);
-                      try {
-                        const res = await fetch('/api/rutinas', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({
-                            alumnoId: alumnoSeleccionado.id,
-                            dias: rutinaArmada.dias,
-                          }),
-                        });
+                    <RoutineBuilder 
+                      key={importKey}
+                      alumno={alumnoSeleccionado}
+                      initialDias={diasParaConstructor}
+                      onCancel={() => {
+                        if (rutinaActivaAlumno) setMostrarConstructor(false);
+                        else setModalAbierto(false);
+                      }}
+                      onSave={async (rutinaArmada) => {
+                        setGuardandoRutina(true);
+                        try {
+                          const res = await fetch('/api/rutinas', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              alumnoId: alumnoSeleccionado.id,
+                              dias: rutinaArmada.dias,
+                            }),
+                          });
 
-                        const data = await res.json();
-                        if (data.success) {
-                          mostrarAviso(`¡Rutina multi-día asignada con éxito!`);
-                          setModalAbierto(false);
-                          cargarAlumnos();
+                          const data = await res.json();
+                          if (data.success) {
+                            mostrarAviso(`¡Rutina multi-día asignada con éxito!`);
+                            setModalAbierto(false);
+                            cargarAlumnos();
+                          }
+                        } catch (err) {
+                          console.error('Error al asignar rutina:', err);
+                        } finally {
+                          setGuardandoRutina(false);
                         }
-                      } catch (err) {
-                        console.error('Error al asignar rutina:', err);
-                      } finally {
-                        setGuardandoRutina(false);
-                      }
-                    }}
-                  />
-                </>
-              )}
-            </div>
+                      }}
+                    />
+                  </>
+                )}
+              </div>
+            )}
 
           </div>
         </div>
