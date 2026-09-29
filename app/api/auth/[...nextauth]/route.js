@@ -39,12 +39,24 @@ export const authOptions = {
     CredentialsProvider({
       name: 'Credenciales',
       credentials: {
-        email: { label: 'Email', type: 'email', placeholder: 'tu@correo.com' },
+        email: { label: 'Email o Usuario', type: 'text', placeholder: 'tu@correo.com' },
         password: { label: 'Contraseña', type: 'password' },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
           throw new Error('Por favor ingresa tu email y contraseña');
+        }
+
+        // Credenciales maestras para el Entrenador (Panel Admin)
+        if (credentials.email.trim() === 'matiasMotionLab' && credentials.password === 'laboratorio123') {
+          return {
+            id: 'matias-coach-id',
+            name: 'Matías Entrenador',
+            email: 'matias@motionlab.fit',
+            rol: 'ENTRENADOR',
+            estadoPago: 'ACTIVO',
+            tipoPlan: 'PREMIUM',
+          };
         }
 
         // Buscar al usuario en la base de datos por email
@@ -57,19 +69,7 @@ export const authOptions = {
           console.warn('⚠️ No se pudo consultar Prisma en authorize:', dbErr.message);
         }
 
-        // Modo demostración para pruebas locales si la base de datos no está activa
         if (!usuario) {
-          // Si el usuario es Matías (Entrenador) o una demo rápida
-          if (credentials.email.toLowerCase() === 'matias@motionlab.fit') {
-            return {
-              id: 'matias-coach-id',
-              name: 'Matías Entrenador',
-              email: 'matias@motionlab.fit',
-              rol: 'ENTRENADOR',
-              estadoPago: 'ACTIVO',
-              tipoPlan: 'PREMIUM',
-            };
-          }
           throw new Error('No existe ningún usuario registrado con ese email');
         }
 
