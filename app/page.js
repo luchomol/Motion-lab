@@ -17,7 +17,6 @@
 
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
-import InteractiveTrainer from '@/components/InteractiveTrainer';
 import AboutTrainer from '@/components/AboutTrainer';
 import PricingSection from '@/components/PricingSection';
 import TestimonialsAndFaq from '@/components/TestimonialsAndFaq';
@@ -34,9 +33,6 @@ export default function Home() {
       <main className="flex-grow">
         {/* Presentación impactante */}
         <Hero />
-
-        {/* Experiencia Interactiva 3D */}
-        <InteractiveTrainer />
 
         {/* Quién es el coach y cómo trabaja */}
         <AboutTrainer />
