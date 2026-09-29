@@ -45,7 +45,7 @@ export default function TestimonialsAndFaq() {
   const faqs = [
     {
       pregunta: '¿Necesito ir a un gimnasio obligatoriamente para entrenar con MOTION LAB?',
-      respuesta: 'No. En el cuestionario inicial puedes especificar si tienes gimnasio o si entrenarás en casa (con mancuernas o solo con peso corporal). Adaptamos los ejercicios y la sobrecarga para que progreses al máximo con el equipo que tengas.',
+      respuesta: 'No. Al solicitar tu plan por WhatsApp puedes especificar si tienes gimnasio o si entrenarás en casa (con mancuernas o solo con peso corporal). Adaptamos los ejercicios y la sobrecarga para que progreses al máximo con el equipo que tengas.',
     },
     {
       pregunta: '¿Qué ocurre si soy completamente principiante y nunca levanté pesas?',

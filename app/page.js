@@ -9,17 +9,15 @@
  * 1. Navbar: Barra de navegación superior
  * 2. Hero: Portada de presentación y llamado a la acción
  * 3. AboutTrainer: Quién es el entrenador y su metodología
- * 4. FitnessQuiz: Cuestionario interactivo para diagnosticar al alumno
- * 5. PricingSection: Comparativa entre el Plan Base y el Plan Premium
- * 6. TestimonialsAndFaq: Testimonios de alumnos y dudas frecuentes
- * 7. Footer: Pie de página y datos de contacto
- * 8. WhatsAppButton: Botón flotante para consultas rápidas
+ * 4. PricingSection: Comparativa entre el Plan Base y el Plan Premium
+ * 5. TestimonialsAndFaq: Testimonios de alumnos y dudas frecuentes
+ * 6. Footer: Pie de página y datos de contacto
+ * 7. WhatsAppButton: Botón flotante para consultas rápidas
  */
 
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import AboutTrainer from '@/components/AboutTrainer';
-import FitnessQuiz from '@/components/FitnessQuiz';
 import PricingSection from '@/components/PricingSection';
 import TestimonialsAndFaq from '@/components/TestimonialsAndFaq';
 import Footer from '@/components/Footer';
@@ -38,9 +36,6 @@ export default function Home() {
 
         {/* Quién es el coach y cómo trabaja */}
         <AboutTrainer />
-
-        {/* Cuestionario con preguntas clave para saber qué plan necesita */}
-        <FitnessQuiz />
 
         {/* Tabla comparativa de precios: Plan Base vs Plan Premium */}
         <PricingSection />

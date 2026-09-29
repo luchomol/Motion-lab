@@ -38,11 +38,6 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href="#cuestionario" className="hover:text-sky-400 transition-colors">
-                  Cuestionario de Evaluación
-                </a>
-              </li>
-              <li>
                 <a href="#planes" className="hover:text-sky-400 transition-colors">
                   Plan Base vs Plan Premium
                 </a>

@@ -44,17 +44,11 @@ export default function Hero() {
             {/* BOTONES DE ACCIÓN */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-10">
               <a
-                href="#cuestionario"
+                href="#planes"
                 className="inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-extrabold text-white bg-gradient-to-r from-blue-600 via-sky-500 to-cyan-400 hover:from-blue-500 hover:to-cyan-300 rounded-full transition-all shadow-xl shadow-blue-500/25 hover:scale-105"
               >
-                <span>Hacer Test de Diagnóstico</span>
+                <span>Ver Plan Base & Premium</span>
                 <ArrowRight className="w-5 h-5" />
-              </a>
-              <a
-                href="#planes"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-slate-200 bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 rounded-full transition-all hover:border-slate-600"
-              >
-                Ver Plan Base & Premium
               </a>
             </div>
 
