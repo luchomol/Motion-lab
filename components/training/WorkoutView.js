@@ -1,15 +1,15 @@
-'use client';
+﻿'use client';
 
 /**
  * ========================================================================
  * COMPONENTE: Vista de Entrenamiento del Alumno (components/training/WorkoutView.js)
  * ========================================================================
- * - Soporta navegación multidía y regreso al cronograma semanal.
- * - Header con progreso en tiempo real y botón de cambio de día.
- * - 3 Bloques colapsables: Movilidad, Activación, Desarrollo.
- * - Integra ExerciseCard con soporte de auto-minimización y re-edición.
- * - Permite guardar y finalizar el día, actualizando el progreso y avanzando
- *   el sugerido al próximo día disponible.
+ * - Soporta navegaciÃ³n multidÃ­a y regreso al cronograma semanal.
+ * - Header con progreso en tiempo real y botÃ³n de cambio de dÃ­a.
+ * - 3 Bloques colapsables: Movilidad, ActivaciÃ³n, Desarrollo.
+ * - Integra ExerciseCard con soporte de auto-minimizaciÃ³n y re-ediciÃ³n.
+ * - Permite guardar y finalizar el dÃ­a, actualizando el progreso y avanzando
+ *   el sugerido al prÃ³ximo dÃ­a disponible.
  */
 
 import { useState, useEffect, useMemo } from 'react';
@@ -18,6 +18,7 @@ import {
   Calendar, Save, Edit3, Sparkles 
 } from 'lucide-react';
 import ExerciseCard from './ExerciseCard';
+import VideoPlayer from './VideoPlayer';
 
 export default function WorkoutView({ 
   alumnoId = 'demo-alumno-1', 
@@ -29,6 +30,7 @@ export default function WorkoutView({
 }) {
   const [rutina, setRutina] = useState(rutinaInicial);
   const [cargando, setCargando] = useState(!rutinaInicial);
+  const [videoActivoId, setVideoActivoId] = useState(null);
   
   // Estado para los acordeones
   const [acordeones, setAcordeones] = useState({
@@ -62,7 +64,7 @@ export default function WorkoutView({
     cargarRutina();
   }, [alumnoId, diaId, rutinaInicial]);
 
-  // Actualizar checkbox de Movilidad o Activación
+  // Actualizar checkbox de Movilidad o ActivaciÃ³n
   const toggleCheckMovilidad = async (ejercicioId, estadoActual) => {
     if (!rutina) return;
     const nuevoEstado = !estadoActual;
@@ -154,7 +156,7 @@ export default function WorkoutView({
     return (
       <div className="w-full max-w-lg mx-auto text-center py-20 flex flex-col items-center">
         <div className="w-12 h-12 rounded-full border-4 border-blue-600 border-t-transparent animate-spin mb-4" />
-        <p className="text-slate-400 font-medium text-sm">Cargando tu planificación...</p>
+        <p className="text-slate-400 font-medium text-sm">Cargando tu planificaciÃ³n...</p>
       </div>
     );
   }
@@ -163,7 +165,7 @@ export default function WorkoutView({
     return (
       <div className="w-full max-w-lg mx-auto text-center py-16 p-8 rounded-3xl bg-slate-900 border border-slate-800">
         <AlertCircle className="w-12 h-12 text-amber-400 mx-auto mb-4" />
-        <h3 className="text-xl font-bold text-white">No se encontró esta sesión</h3>
+        <h3 className="text-xl font-bold text-white">No se encontrÃ³ esta sesiÃ³n</h3>
         {onVolver && (
           <button
             type="button"
@@ -184,7 +186,7 @@ export default function WorkoutView({
   return (
     <div className="w-full max-w-md mx-auto min-h-screen bg-[#05070c] pb-24 font-sans">
       
-      {/* BOTÓN REGRESAR AL CRONOGRAMA */}
+      {/* BOTÃ“N REGRESAR AL CRONOGRAMA */}
       {onVolver && (
         <div className="pt-2 pb-3 px-4">
           <button
@@ -193,17 +195,17 @@ export default function WorkoutView({
             className="inline-flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-sky-400 bg-slate-900/80 hover:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-800 transition-all"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>← Cronograma Semanal (Cambiar Día)</span>
+            <span>â† Cronograma Semanal (Cambiar DÃ­a)</span>
           </button>
         </div>
       )}
 
-      {/* BANNER SI ESTÁ EN MODO EDICIÓN */}
+      {/* BANNER SI ESTÃ EN MODO EDICIÃ“N */}
       {esModoEdicion && (
         <div className="mx-4 mb-3 p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2 text-emerald-300 font-bold">
             <Edit3 className="w-4 h-4 shrink-0 text-emerald-400" />
-            <span>Modo Edición: Modificando día finalizado</span>
+            <span>Modo EdiciÃ³n: Modificando dÃ­a finalizado</span>
           </div>
           <button
             type="button"
@@ -215,22 +217,22 @@ export default function WorkoutView({
         </div>
       )}
 
-      {/* HEADER: ¡A entrenar! y Barra de progreso */}
+      {/* HEADER: Â¡A entrenar! y Barra de progreso */}
       <div className="pt-3 pb-6 px-4 bg-[#05070c] sticky top-0 z-10 border-b border-slate-800/80">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2.5">
-            <span>{esModoEdicion ? 'Editando Sesión' : '¡A entrenar!'}</span>
-            <span className="text-2xl">{esModoEdicion ? '✏️' : '💪'}</span>
+            <span>{esModoEdicion ? 'Editando SesiÃ³n' : 'Â¡A entrenar!'}</span>
+            <span className="text-2xl">{esModoEdicion ? 'âœï¸' : 'ðŸ’ª'}</span>
           </h1>
           {onVolver && (
             <button
               type="button"
               onClick={onVolver}
               className="p-2 rounded-xl bg-slate-900 text-slate-400 hover:text-white border border-slate-800 text-xs font-bold flex items-center gap-1"
-              title="Ver otros días"
+              title="Ver otros dÃ­as"
             >
               <Calendar className="w-4 h-4 text-sky-400" />
-              <span className="hidden sm:inline">Días</span>
+              <span className="hidden sm:inline">DÃ­as</span>
             </button>
           )}
         </div>
@@ -243,7 +245,7 @@ export default function WorkoutView({
         <div className="mt-5">
           <div className="flex justify-between items-end mb-2">
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-              Progreso de la sesión
+              Progreso de la sesiÃ³n
             </span>
             <span className="text-sm font-black text-blue-400">{progreso}%</span>
           </div>
@@ -298,25 +300,28 @@ export default function WorkoutView({
                       )}
                       
                       {(ej.videoUrl || ej.videoRecomendacion) && (
-                        <div className="mt-2 flex flex-col items-start gap-1.5">
-                          {ej.videoUrl && (
-                            <a
-                              href={ej.videoUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={(e) => e.stopPropagation()}
-                              className="inline-flex items-center gap-1 px-2 py-1 rounded bg-red-500/10 hover:bg-red-500/20 text-red-400 text-[10px] font-bold transition-colors border border-red-500/20"
-                            >
-                              ▶ Ver Video
-                            </a>
-                          )}
-                          {ej.videoRecomendacion && (
-                            <span className="text-[10px] font-medium text-slate-400 bg-slate-800/50 p-1.5 rounded-md border border-slate-700/50">
-                              💡 {ej.videoRecomendacion}
-                            </span>
-                          )}
-                        </div>
-                      )}
+  <div className="mt-2 flex flex-col items-start gap-1.5 w-full">
+    {ej.videoUrl && videoActivoId !== ej.id && (
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); setVideoActivoId(ej.id); }}
+        className="inline-flex items-center gap-1 px-2 py-1 rounded bg-red-500/10 hover:bg-red-500/20 text-red-400 text-[10px] font-bold transition-colors border border-red-500/20"
+      >
+        ▶ Reproducir Video
+      </button>
+    )}
+    {ej.videoUrl && videoActivoId === ej.id && (
+      <div onClick={(e) => e.stopPropagation()} className="w-full">
+        <VideoPlayer videoUrl={ej.videoUrl} onClose={() => setVideoActivoId(null)} />
+      </div>
+    )}
+    {ej.videoRecomendacion && (
+      <span className="text-[10px] font-medium text-slate-400 bg-slate-800/50 p-1.5 rounded-md border border-slate-700/50">
+        💡 {ej.videoRecomendacion}
+      </span>
+    )}
+  </div>
+)}
                     </div>
                   </div>
                 ))}
@@ -325,7 +330,7 @@ export default function WorkoutView({
           </div>
         )}
 
-        {/* BLOQUE 2: ACTIVACIÓN */}
+        {/* BLOQUE 2: ACTIVACIÃ“N */}
         {bloqueActivacion && (
           <div className="bg-[#0b1220] rounded-2xl border border-slate-800 overflow-hidden shadow-lg">
             <button 
@@ -338,7 +343,7 @@ export default function WorkoutView({
                   2
                 </span>
                 <h2 className="text-base font-black text-white uppercase tracking-wide">
-                  Activación & Potenciación
+                  ActivaciÃ³n & PotenciaciÃ³n
                 </h2>
               </div>
               {acordeones.ACTIVACION ? <ChevronUp className="w-5 h-5 text-slate-400" /> : <ChevronDown className="w-5 h-5 text-slate-400" />}
@@ -364,25 +369,28 @@ export default function WorkoutView({
                       )}
                       
                       {(ej.videoUrl || ej.videoRecomendacion) && (
-                        <div className="mt-2 flex flex-col items-start gap-1.5">
-                          {ej.videoUrl && (
-                            <a
-                              href={ej.videoUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={(e) => e.stopPropagation()}
-                              className="inline-flex items-center gap-1 px-2 py-1 rounded bg-red-500/10 hover:bg-red-500/20 text-red-400 text-[10px] font-bold transition-colors border border-red-500/20"
-                            >
-                              ▶ Ver Video
-                            </a>
-                          )}
-                          {ej.videoRecomendacion && (
-                            <span className="text-[10px] font-medium text-slate-400 bg-slate-800/50 p-1.5 rounded-md border border-slate-700/50">
-                              💡 {ej.videoRecomendacion}
-                            </span>
-                          )}
-                        </div>
-                      )}
+  <div className="mt-2 flex flex-col items-start gap-1.5 w-full">
+    {ej.videoUrl && videoActivoId !== ej.id && (
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); setVideoActivoId(ej.id); }}
+        className="inline-flex items-center gap-1 px-2 py-1 rounded bg-red-500/10 hover:bg-red-500/20 text-red-400 text-[10px] font-bold transition-colors border border-red-500/20"
+      >
+        ▶ Reproducir Video
+      </button>
+    )}
+    {ej.videoUrl && videoActivoId === ej.id && (
+      <div onClick={(e) => e.stopPropagation()} className="w-full">
+        <VideoPlayer videoUrl={ej.videoUrl} onClose={() => setVideoActivoId(null)} />
+      </div>
+    )}
+    {ej.videoRecomendacion && (
+      <span className="text-[10px] font-medium text-slate-400 bg-slate-800/50 p-1.5 rounded-md border border-slate-700/50">
+        💡 {ej.videoRecomendacion}
+      </span>
+    )}
+  </div>
+)}
                     </div>
                   </div>
                 ))}
@@ -391,7 +399,7 @@ export default function WorkoutView({
           </div>
         )}
 
-        {/* BLOQUE 3: DESARROLLO (Crucial con auto-minimización) */}
+        {/* BLOQUE 3: DESARROLLO (Crucial con auto-minimizaciÃ³n) */}
         {bloqueDesarrollo && (
           <div className="bg-[#0b1220] rounded-2xl border border-slate-800 overflow-hidden shadow-lg border-blue-500/30">
             <button 
@@ -416,7 +424,7 @@ export default function WorkoutView({
             {acordeones.DESARROLLO && (
               <div className="p-4 border-t border-slate-800/80 bg-[#0c1322] animate-fadeIn">
                 <p className="text-xs text-slate-400 mb-5 font-medium">
-                  Registra tus series. Al completar la última serie, el ejercicio se minimizará automáticamente y podrás editarlo si lo necesitas.
+                  Registra tus series. Al completar la Ãºltima serie, el ejercicio se minimizarÃ¡ automÃ¡ticamente y podrÃ¡s editarlo si lo necesitas.
                 </p>
                 
                 {bloqueDesarrollo.ejercicios.map((ejercicio) => (
@@ -433,7 +441,7 @@ export default function WorkoutView({
 
       </div>
 
-      {/* BOTÓN FINAL DE COMPLETAR O GUARDAR CAMBIOS */}
+      {/* BOTÃ“N FINAL DE COMPLETAR O GUARDAR CAMBIOS */}
       <div className="text-center px-4 pt-4 space-y-3">
         <button
           type="button"
@@ -447,7 +455,7 @@ export default function WorkoutView({
           {esModoEdicion ? (
             <>
               <Save className="w-5 h-5" />
-              <span>Guardar Cambios de {rutina.nombre.split(':')[0] || 'la Sesión'}</span>
+              <span>Guardar Cambios de {rutina.nombre.split(':')[0] || 'la SesiÃ³n'}</span>
             </>
           ) : (
             <>
@@ -471,3 +479,4 @@ export default function WorkoutView({
     </div>
   );
 }
+

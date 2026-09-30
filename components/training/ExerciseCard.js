@@ -16,9 +16,11 @@ import {
   Check, MessageSquare, ChevronDown, ChevronUp, Save, 
   Minus, Plus, Edit3 
 } from 'lucide-react';
+import VideoPlayer from './VideoPlayer';
 
 export default function ExerciseCard({ ejercicio, onUpdateEjercicio }) {
   const [series, setSeries] = useState(ejercicio.series || []);
+  const [videoAbierto, setVideoAbierto] = useState(false);
   const [mostrarObservacion, setMostrarObservacion] = useState(
     Boolean(ejercicio.observacion && ejercicio.observacion.trim().length > 0)
   );
@@ -219,16 +221,15 @@ export default function ExerciseCard({ ejercicio, onUpdateEjercicio }) {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <h4 className="text-xl font-black text-white">{ejercicio.nombre}</h4>
           <div className="flex items-center gap-2">
-            {ejercicio.videoUrl && (
-              <a
-                href={ejercicio.videoUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold transition-colors border border-red-500/20"
-              >
-                <span>▶ Ver Video</span>
-              </a>
-            )}
+            {ejercicio.videoUrl && !videoAbierto && (
+  <button
+    type="button"
+    onClick={() => setVideoAbierto(true)}
+    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold transition-colors border border-red-500/20"
+  >
+    ▶ Reproducir Video
+  </button>
+)}
             {todasCompletadas && (
               <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                 Completado
@@ -236,6 +237,12 @@ export default function ExerciseCard({ ejercicio, onUpdateEjercicio }) {
             )}
           </div>
         </div>
+
+        {ejercicio.videoUrl && videoAbierto && (
+          <div className="mt-4">
+            <VideoPlayer videoUrl={ejercicio.videoUrl} onClose={() => setVideoAbierto(false)} />
+          </div>
+        )}
 
         {ejercicio.indicacionProfe && (
           <p className="text-sm font-semibold text-sky-400 mt-2 flex items-start gap-2 bg-blue-900/20 p-3 rounded-xl border border-blue-500/20">
