@@ -8,6 +8,7 @@
 
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import bcrypt from 'bcryptjs';
 
 export async function GET() {
   try {
@@ -107,18 +108,24 @@ export async function POST(req) {
   try {
     const data = await req.json();
     const {
-      nombre, apellido, email, whatsapp, peso, altura, lesiones, estadoPago, tipoPlan,
+      nombre, apellido, email, password, whatsapp, peso, altura, lesiones, estadoPago, tipoPlan,
       objetivo, deporte, club, nivel, focos, disponibilidad, rmEstimado, puntosDebiles
     } = data;
 
     // Generar email único si no se provee
     const finalEmail = email || `alumno-${Date.now()}@motionlab.local`;
+    
+    let passwordHash = null;
+    if (password && password.trim() !== '') {
+      passwordHash = await bcrypt.hash(password, 10);
+    }
 
     const nuevoAlumno = await prisma.usuario.create({
       data: {
         nombre: nombre || 'Sin Nombre',
         apellido: apellido || '',
         email: finalEmail.toLowerCase().trim(),
+        passwordHash,
         whatsapp,
         peso: peso ? parseFloat(peso) : null,
         altura: altura ? parseFloat(altura) : null,

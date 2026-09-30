@@ -44,7 +44,7 @@ export default function DashboardTrainer() {
   const [editandoPerfil, setEditandoPerfil] = useState(false);
   const [esNuevoUsuario, setEsNuevoUsuario] = useState(false);
   const [formData, setFormData] = useState({
-    nombre: '', apellido: '', email: '', whatsapp: '',
+    nombre: '', apellido: '', email: '', password: '', whatsapp: '',
     peso: '', altura: '', lesiones: '', estadoPago: 'PENDIENTE', tipoPlan: 'BASE',
     objetivo: 'Rendimiento', deporte: 'Fitness General', club: false,
     nivel: 'Principiante', focos: 'General', disponibilidad: '3 días',
@@ -55,7 +55,7 @@ export default function DashboardTrainer() {
     setEsNuevoUsuario(true);
     setEditandoPerfil(true);
     setFormData({
-      nombre: '', apellido: '', email: '', whatsapp: '',
+      nombre: '', apellido: '', email: '', password: '', whatsapp: '',
       peso: '', altura: '', lesiones: '', estadoPago: 'PENDIENTE', tipoPlan: 'BASE',
       objetivo: 'Rendimiento', deporte: 'Fitness General', club: false,
       nivel: 'Principiante', focos: 'General', disponibilidad: '3 días',
@@ -78,6 +78,7 @@ export default function DashboardTrainer() {
       nombre: alumno.nombre || '',
       apellido: alumno.apellido || '',
       email: alumno.email || '',
+      password: '', // Se deja vacío por seguridad. Solo se envía si se escribe una nueva.
       whatsapp: alumno.whatsapp || '',
       peso: alumno.peso || '',
       altura: alumno.altura || '',
@@ -619,6 +620,12 @@ export default function DashboardTrainer() {
                   <div>
                     <label className="block text-[10px] text-slate-400 uppercase font-bold mb-1">Email</label>
                     <input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-sky-500" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] text-slate-400 uppercase font-bold mb-1">
+                      {esNuevoUsuario ? 'Contraseña' : 'Nueva Contraseña (Opcional)'}
+                    </label>
+                    <input type="text" placeholder={esNuevoUsuario ? '' : 'Dejar en blanco para no cambiar'} value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-sky-500" />
                   </div>
                   <div>
                     <label className="block text-[10px] text-slate-400 uppercase font-bold mb-1">WhatsApp</label>

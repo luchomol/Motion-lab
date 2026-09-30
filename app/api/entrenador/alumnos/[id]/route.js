@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import bcrypt from 'bcryptjs';
 
 export async function PUT(req, { params }) {
   try {
@@ -7,18 +8,28 @@ export async function PUT(req, { params }) {
     const data = await req.json();
 
     const {
-      nombre, apellido, email, whatsapp, peso, altura, lesiones, estadoPago, tipoPlan,
+      nombre, apellido, email, password, whatsapp, peso, altura, lesiones, estadoPago, tipoPlan,
       objetivo, deporte, club, nivel, focos, disponibilidad, rmEstimado, puntosDebiles
     } = data;
+    
+    // Preparar campos para actualizar el usuario base
+    const updateData = {
+      nombre,
+      apellido,
+      email,
+      whatsapp,
+    };
+    
+    // Si se proporciona una contraseña, actualizarla
+    if (password && password.trim() !== '') {
+      updateData.passwordHash = await bcrypt.hash(password, 10);
+    }
 
     // Actualizar usuario
     const alumnoActualizado = await prisma.usuario.update({
       where: { id: alumnoId },
       data: {
-        nombre,
-        apellido,
-        email,
-        whatsapp,
+        ...updateData,
         peso: peso ? parseFloat(peso) : null,
         altura: altura ? parseFloat(altura) : null,
         lesiones,
