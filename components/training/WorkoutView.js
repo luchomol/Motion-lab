@@ -296,6 +296,27 @@ export default function WorkoutView({
                       {ej.indicacionProfe && (
                         <span className="text-[11px] text-slate-400 block mt-0.5">{ej.indicacionProfe}</span>
                       )}
+                      
+                      {(ej.videoUrl || ej.videoRecomendacion) && (
+                        <div className="mt-2 flex flex-col items-start gap-1.5">
+                          {ej.videoUrl && (
+                            <a
+                              href={ej.videoUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded bg-red-500/10 hover:bg-red-500/20 text-red-400 text-[10px] font-bold transition-colors border border-red-500/20"
+                            >
+                              ▶ Ver Video
+                            </a>
+                          )}
+                          {ej.videoRecomendacion && (
+                            <span className="text-[10px] font-medium text-slate-400 bg-slate-800/50 p-1.5 rounded-md border border-slate-700/50">
+                              💡 {ej.videoRecomendacion}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -340,6 +361,27 @@ export default function WorkoutView({
                       </span>
                       {ej.indicacionProfe && (
                         <span className="block text-xs font-semibold text-sky-400 mt-0.5">{ej.indicacionProfe}</span>
+                      )}
+                      
+                      {(ej.videoUrl || ej.videoRecomendacion) && (
+                        <div className="mt-2 flex flex-col items-start gap-1.5">
+                          {ej.videoUrl && (
+                            <a
+                              href={ej.videoUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded bg-red-500/10 hover:bg-red-500/20 text-red-400 text-[10px] font-bold transition-colors border border-red-500/20"
+                            >
+                              ▶ Ver Video
+                            </a>
+                          )}
+                          {ej.videoRecomendacion && (
+                            <span className="text-[10px] font-medium text-slate-400 bg-slate-800/50 p-1.5 rounded-md border border-slate-700/50">
+                              💡 {ej.videoRecomendacion}
+                            </span>
+                          )}
+                        </div>
                       )}
                     </div>
                   </div>
