@@ -223,7 +223,7 @@ export default function Navbar() {
               isSunlight ? 'text-slate-900 hover:text-blue-700' : 'text-slate-200 hover:text-sky-400'
             }`}
           >
-            Planes y Membresías
+            Planes de Entrenamiento
           </a>
           <div className="pt-2">
             <Link

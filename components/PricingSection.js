@@ -2,9 +2,9 @@
 
 /**
  * ========================================================================
- * COMPONENTE: Planes y Membresías MOTION LAB (PricingSection.js)
+ * COMPONENTE: Planes de Entrenamiento MOTION LAB (PricingSection.js)
  * ========================================================================
- * Presentación de las dos opciones de planificación:
+ * Presentación de las opciones de planificación:
  * 1. Plan Base: Planificación estructurada periódica para alumnos autónomos.
  * 2. Plan Premium Personalizado: Acompañamiento 1 a 1 continuo.
  * Optimizado para alto contraste exterior y legibilidad en pantallas móviles al sol.
@@ -35,20 +35,20 @@ export default function PricingSection() {
               ? 'bg-blue-100 text-blue-900 border-blue-300'
               : 'bg-blue-500/10 text-sky-400 border-blue-500/20'
           }`}>
-            Membresías de Rendimiento
+            Programas de Entrenamiento
           </div>
           <h2 className={`text-3xl sm:text-5xl font-black tracking-tight ${
             isSunlight ? 'text-[#020617]' : 'text-white'
           }`}>
-            ELIGE TU NIVEL DE{' '}
+            PLANES DE{' '}
             <span className={isSunlight ? 'text-blue-700' : 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-sky-300'}>
-              PLANIFICACIÓN
+              ENTRENAMIENTO
             </span>
           </h2>
           <p className={`text-sm sm:text-base mt-3 font-medium ${
             isSunlight ? 'text-slate-700' : 'text-slate-300'
           }`}>
-            Planes flexibles sin permanencia obligatoria en MOTION LAB. Cancela o cambia de modalidad en cualquier momento.
+            Planificación basada en ciencia y biomecánica adaptada a tus objetivos y nivel.
           </p>
         </div>
 
@@ -86,15 +86,15 @@ export default function PricingSection() {
                 Ideal para alumnos que conocen la técnica básica y solo necesitan una rutina estructurada y científicamente periodizada para progresar por su cuenta.
               </p>
 
-              {/* Información de precios */}
+              {/* Información */}
               <div className={`mt-6 mb-8 pb-6 border-b ${
                 isSunlight ? 'border-slate-300 text-slate-800' : 'border-slate-800 text-slate-300'
               }`}>
                 <p className="text-sm font-semibold">
-                  Los valores y métodos de pago se coordinan de forma personalizada según tu país de residencia.
+                  Los valores y métodos de pago se coordinan de forma personalizada según tu país y necesidades.
                 </p>
-                <span className={`text-xs font-bold block mt-2 ${isSunlight ? 'text-slate-600' : 'text-slate-400'}`}>
-                  Renovación mensual sin ataduras
+                <span className={`text-xs font-bold block mt-2 ${isSunlight ? 'text-blue-700' : 'text-sky-400'}`}>
+                  Rutina mensual 100% estructurada para progresar
                 </span>
               </div>
 
@@ -182,7 +182,7 @@ export default function PricingSection() {
                 isSunlight ? 'border-amber-300 text-slate-800' : 'border-slate-800 text-slate-300'
               }`}>
                 <p className="text-sm font-semibold">
-                  Los valores y métodos de pago se coordinan de forma personalizada según tu país de residencia.
+                  Los valores y métodos de pago se coordinan de forma personalizada según tu país y objetivos.
                 </p>
                 <span className={`text-xs font-bold block mt-2 ${isSunlight ? 'text-amber-800' : 'text-amber-400'}`}>
                   Cupos limitados para garantizar máxima precisión
