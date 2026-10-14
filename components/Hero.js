@@ -106,10 +106,10 @@ export default function Hero() {
           <div className="lg:col-span-5 flex justify-center">
             <div className="relative w-full max-w-md group">
               
-              {/* Resplandor */}
-              {!isSunlight && (
-                <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-3xl blur-xl opacity-40 group-hover:opacity-60 transition duration-500" />
-              )}
+              {/* Resplandor dinámico en azul eléctrico y cyan */}
+              <div className={`absolute -inset-1.5 bg-gradient-to-r from-blue-600 via-sky-500 to-cyan-400 rounded-3xl blur-xl transition duration-500 ${
+                isSunlight ? 'opacity-70 group-hover:opacity-95' : 'opacity-40 group-hover:opacity-60'
+              }`} />
               
               {/* Marco de la imagen oficial con estilo de tarjeta atlética */}
               <div className={`relative rounded-3xl overflow-hidden shadow-2xl transition-all ${

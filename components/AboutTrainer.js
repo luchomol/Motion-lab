@@ -26,9 +26,10 @@ export default function AboutTrainer() {
           <div className="lg:col-span-5 flex justify-center">
             <div className="relative w-full max-w-md group">
               
-              {!isSunlight && (
-                <div className="absolute -inset-1 bg-gradient-to-r from-sky-600/30 to-blue-600/30 rounded-3xl blur-xl opacity-50 group-hover:opacity-75 transition duration-500" />
-              )}
+              {/* Resplandor dinámico exterior en azul atlético y cyan */}
+              <div className={`absolute -inset-1.5 bg-gradient-to-r from-sky-500 via-blue-600 to-cyan-400 rounded-3xl blur-xl transition duration-500 ${
+                isSunlight ? 'opacity-70 group-hover:opacity-95' : 'opacity-50 group-hover:opacity-75'
+              }`} />
 
               <div className={`relative rounded-3xl overflow-hidden shadow-2xl transition-all ${
                 isSunlight ? 'border-2 border-slate-300 bg-white' : 'border border-slate-800 bg-slate-900'
