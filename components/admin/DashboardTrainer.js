@@ -328,7 +328,11 @@ export default function DashboardTrainer() {
         ? true
         : filtro === 'PENDIENTES'
         ? a.estadoPago === 'PENDIENTE'
-        : a.estadoPago === 'ACTIVO';
+        : filtro === 'ACTIVOS'
+        ? a.estadoPago === 'ACTIVO'
+        : filtro === 'ALERTAS'
+        ? a.alertaBienestar === 'ROJA' || a.alertaBienestar === 'AMARILLA'
+        : true;
 
     const textoBusqueda = `${a.nombre} ${a.apellido || ''} ${a.email} ${a.perfilDeportivo?.deporte || ''}`.toLowerCase();
     const coincideBusqueda = textoBusqueda.includes(busqueda.toLowerCase());
@@ -387,6 +391,12 @@ export default function DashboardTrainer() {
               {alumnos.filter((a) => a.estadoPago === 'ACTIVO').length}
             </span>
           </div>
+          <div className="px-4 py-2.5 rounded-2xl bg-red-500/10 border border-red-500/30 text-center">
+            <span className="text-xs text-red-400 block font-bold">Alertas Fatiga</span>
+            <span className="text-xl font-black text-red-400">
+              {alumnos.filter((a) => a.alertaBienestar === 'ROJA').length}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -394,16 +404,17 @@ export default function DashboardTrainer() {
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         
         {/* BOTONES DE FILTRO */}
-        <div className="flex items-center gap-2 bg-slate-900/80 p-1.5 rounded-2xl border border-slate-800 w-full sm:w-auto">
+        <div className="flex items-center gap-2 bg-slate-900/80 p-1.5 rounded-2xl border border-slate-800 w-full sm:w-auto overflow-x-auto">
           {[
             { id: 'TODOS', label: 'Todos' },
             { id: 'PENDIENTES', label: 'Pendientes de Pago' },
             { id: 'ACTIVOS', label: 'Alumnos Activos' },
+            { id: 'ALERTAS', label: '🚨 Alertas de Fatiga' },
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setFiltro(tab.id)}
-              className={`py-2 px-4 rounded-xl text-xs font-bold transition-all ${
+              className={`py-2 px-4 rounded-xl text-xs font-bold transition-all shrink-0 ${
                 filtro === tab.id
                   ? 'bg-sky-500 text-slate-950 shadow-md'
                   : 'text-slate-400 hover:text-white'
@@ -436,6 +447,7 @@ export default function DashboardTrainer() {
               <tr>
                 <th className="py-4 px-6">Alumno</th>
                 <th className="py-4 px-6">Plan & Deporte</th>
+                <th className="py-4 px-6">Bienestar & Fatiga (UX)</th>
                 <th className="py-4 px-6">Nivel & Focos</th>
                 <th className="py-4 px-6">Estado de Pago</th>
                 <th className="py-4 px-6 text-right">Acciones</th>
@@ -444,13 +456,13 @@ export default function DashboardTrainer() {
             <tbody className="divide-y divide-slate-800/60">
               {cargando ? (
                 <tr>
-                  <td colSpan={5} className="py-12 text-center text-slate-400">
+                  <td colSpan={6} className="py-12 text-center text-slate-400">
                     Cargando base de datos de alumnos...
                   </td>
                 </tr>
               ) : alumnosFiltrados.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-12 text-center text-slate-500">
+                  <td colSpan={6} className="py-12 text-center text-slate-500">
                     No se encontraron alumnos con los filtros seleccionados.
                   </td>
                 </tr>
@@ -499,7 +511,27 @@ export default function DashboardTrainer() {
                         </div>
                       </td>
 
-                      {/* COLUMNA 3: NIVEL Y FOCOS */}
+                      {/* COLUMNA 3: BIENESTAR Y FATIGA (ALERTAS ROJA / AMARILLA / VERDE) */}
+                      <td className="py-4 px-6">
+                        {alumno.alertaBienestar === 'ROJA' ? (
+                          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-red-500/20 text-red-300 border border-red-500/40 text-[11px] font-extrabold animate-pulse">
+                            <span>🚨</span>
+                            <span>ALERTA ROJA (3 clases Agotado)</span>
+                          </div>
+                        ) : alumno.alertaBienestar === 'AMARILLA' ? (
+                          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px] font-bold">
+                            <span>⚠️</span>
+                            <span>Alerta Amarilla (Fatiga)</span>
+                          </div>
+                        ) : (
+                          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[11px] font-semibold">
+                            <span>🟢</span>
+                            <span>Óptimo / Buen descanso</span>
+                          </div>
+                        )}
+                      </td>
+
+                      {/* COLUMNA 4: NIVEL Y FOCOS */}
                       <td className="py-4 px-6">
                         <div className="space-y-1">
                           <span className="text-slate-200 font-semibold block">
@@ -737,6 +769,92 @@ export default function DashboardTrainer() {
                     )}
                   </div>
                 )}
+
+                {/* SECCIÓN: BIENESTAR, ALERTAS DE FATIGA Y HISTORIAL DE CHECK-INS */}
+                <div className="mb-6 p-5 rounded-2xl bg-[#070d19] border border-sky-500/30 shadow-lg">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+                    <div className="flex items-center gap-2">
+                      <Activity className="w-5 h-5 text-sky-400" />
+                      <h3 className="text-sm font-black text-white uppercase tracking-wider">
+                        Monitoreo Psico-Físico y Alertas (UX Check-in)
+                      </h3>
+                    </div>
+                    {alumnoSeleccionado?.alertaBienestar === 'ROJA' ? (
+                      <span className="px-3 py-1 rounded-full bg-red-500/20 text-red-400 border border-red-500/40 text-xs font-black flex items-center gap-1.5 w-max">
+                        <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+                        🚨 Alerta Roja: 3 clases consecutivas agotado/estresado
+                      </span>
+                    ) : alumnoSeleccionado?.alertaBienestar === 'AMARILLA' ? (
+                      <span className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 text-xs font-bold w-max">
+                        ⚠️ Alerta Amarilla: Fatiga o estrés reciente
+                      </span>
+                    ) : (
+                      <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs font-bold w-max">
+                        🟢 Estado Físico Óptimo
+                      </span>
+                    )}
+                  </div>
+
+                  {alumnoSeleccionado?.alertaBienestar === 'ROJA' && (
+                    <div className="mt-3.5 p-3.5 rounded-xl bg-red-950/40 border border-red-500/40 text-xs text-red-200">
+                      <strong className="text-red-400 block font-black mb-1">
+                        🚨 Sugerencia de Intervención para Matías:
+                      </strong>
+                      Este alumno marcó <strong>&quot;Agotado&quot;</strong> o <strong>&quot;Muy estresado&quot;</strong> durante 3 clases seguidas. Se recomienda programar una semana de descarga (Deload), reducir el RPE objetivo o chequear su descanso y alimentación antes de la próxima sesión intensa.
+                    </div>
+                  )}
+
+                  {/* Resumen de últimos check-ins */}
+                  <div className="mt-4">
+                    <span className="text-[11px] font-bold uppercase text-slate-400 block mb-2">
+                      Historial Reciente de Check-ins (Pre y Post Rutina)
+                    </span>
+                    {alumnoSeleccionado?.checkins && alumnoSeleccionado.checkins.length > 0 ? (
+                      <div className="grid gap-2.5 sm:grid-cols-3">
+                        {alumnoSeleccionado.checkins.map((chk, i) => (
+                          <div key={i} className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs space-y-1.5">
+                            <div className="flex items-center justify-between text-[11px] font-black text-sky-400 pb-1 border-b border-slate-800">
+                              <span>{chk.clase || `Sesión ${i + 1}`}</span>
+                              <span className="text-slate-500 font-normal">{chk.fecha || ''}</span>
+                            </div>
+                            <div className="text-slate-300">
+                              <span className="text-slate-400 font-medium">Energía:</span>{' '}
+                              <strong className={chk.energiaInicial <= 1 ? 'text-red-400' : 'text-emerald-400'}>
+                                {chk.energiaInicial <= 1 ? '🪫 1 (Agotado)' : chk.energiaInicial === 2 ? '🔋 2 (Bajo)' : chk.energiaInicial === 3 ? '🔋 3 (Normal)' : chk.energiaInicial === 4 ? '⚡ 4 (Con ganas)' : '🔥 5 (A tope)'}
+                              </strong>
+                            </div>
+                            <div className="text-slate-300">
+                              <span className="text-slate-400 font-medium">Mental:</span>{' '}
+                              <span>{chk.animoInicial <= 1 ? '😫 Muy estresado' : chk.animoInicial === 2 ? '🙁 Desmotivado' : chk.animoInicial === 3 ? '😐 Neutral' : chk.animoInicial === 4 ? '🙂 Bien' : '🤩 Excelente'}</span>
+                            </div>
+                            {chk.descansoInicial && (
+                              <div className="text-slate-400 text-[11px]">
+                                <span>Descanso:</span> <strong>{chk.descansoInicial}</strong>
+                              </div>
+                            )}
+                            {chk.esfuerzoFinal && (
+                              <div className="text-slate-300 pt-1.5 border-t border-slate-800 flex justify-between items-center text-[11px]">
+                                <span className="text-slate-400 font-medium">RPE Final:</span>
+                                <span className="font-extrabold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded">
+                                  {chk.esfuerzoFinal} / 10
+                                </span>
+                              </div>
+                            )}
+                            {chk.animoFinal && (
+                              <div className="text-[11px] text-slate-400">
+                                <span>Impacto:</span> {chk.animoFinal === 1 ? '📉 Peor' : chk.animoFinal === 2 ? '➖ Igual' : '📈 Renovado'}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-slate-500 italic p-3 bg-slate-900/40 rounded-xl border border-slate-800">
+                        Aún no hay check-ins registrados para este alumno. Aparecerán aquí en tiempo real cuando responda las preguntas de energía y esfuerzo.
+                      </p>
+                    )}
+                  </div>
+                </div>
               </>
             )}
 

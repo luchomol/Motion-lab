@@ -20,11 +20,51 @@ export async function GET() {
         include: {
           perfilDeportivo: true,
           rutinasComoAlumno: {
-            where: { estado: 'ACTIVA' },
-            select: { id: true, nombre: true, fechaAsignada: true },
+            select: { 
+              id: true, 
+              nombre: true, 
+              fechaAsignada: true,
+              estado: true,
+              energiaInicial: true,
+              animoInicial: true,
+              descansoInicial: true,
+              animoFinal: true,
+              esfuerzoFinal: true,
+              desahogoFinal: true,
+              fechaCompletada: true,
+            },
+            orderBy: { createdAt: 'desc' },
+            take: 5,
           },
         },
         orderBy: { createdAt: 'desc' },
+      });
+
+      // Calcular alertas de fatiga para alumnos reales
+      alumnos = alumnos.map((alumno) => {
+        const rutinas = alumno.rutinasComoAlumno || [];
+        const checkinsValidos = rutinas.filter((r) => r.energiaInicial || r.animoInicial);
+        let fatigaConsecutiva = 0;
+        for (const c of checkinsValidos) {
+          if (c.energiaInicial <= 1 || c.animoInicial <= 1) {
+            fatigaConsecutiva++;
+          } else {
+            break;
+          }
+        }
+        let alertaBienestar = 'VERDE';
+        if (fatigaConsecutiva >= 3) {
+          alertaBienestar = 'ROJA';
+        } else if (fatigaConsecutiva > 0 || (checkinsValidos[0] && (checkinsValidos[0].energiaInicial <= 2 || checkinsValidos[0].animoInicial <= 2))) {
+          alertaBienestar = 'AMARILLA';
+        }
+
+        return {
+          ...alumno,
+          alertaBienestar,
+          consecutivosFatiga: fatigaConsecutiva,
+          checkins: checkinsValidos,
+        };
       });
     } catch (dbErr) {
       console.warn('⚠️ No se pudo consultar alumnos en MySQL (modo demo):', dbErr.message);
@@ -45,6 +85,41 @@ export async function GET() {
           estadoPago: 'PENDIENTE',
           tipoPlan: 'PREMIUM',
           createdAt: new Date().toISOString(),
+          // Alerta Roja: 3 clases seguidas reportando Agotado o Muy Estresado
+          alertaBienestar: 'ROJA',
+          consecutivosFatiga: 3,
+          checkins: [
+            {
+              clase: 'Clase 3 (Ayer)',
+              fecha: '2026-10-13',
+              energiaInicial: 1, // Agotado
+              animoInicial: 1, // Muy estresado
+              descansoInicial: 'Mal',
+              esfuerzoFinal: 9,
+              animoFinal: 1, // Peor
+              desahogoFinal: 'No, sigo a mil',
+            },
+            {
+              clase: 'Clase 2 (Hace 3 días)',
+              fecha: '2026-10-11',
+              energiaInicial: 1, // Agotado
+              animoInicial: 2, // Desmotivado
+              descansoInicial: 'Mal',
+              esfuerzoFinal: 8,
+              animoFinal: 2, // Igual
+              desahogoFinal: 'Un poco',
+            },
+            {
+              clase: 'Clase 1 (Hace 5 días)',
+              fecha: '2026-10-09',
+              energiaInicial: 1, // Agotado
+              animoInicial: 1, // Muy estresado
+              descansoInicial: 'Regular',
+              esfuerzoFinal: 9,
+              animoFinal: 1, // Peor
+              desahogoFinal: 'No, sigo a mil',
+            },
+          ],
           perfilDeportivo: {
             objetivo: 'Rendimiento',
             deporte: 'Fútbol',
@@ -69,6 +144,31 @@ export async function GET() {
           estadoPago: 'ACTIVO',
           tipoPlan: 'BASE',
           createdAt: new Date().toISOString(),
+          // Alerta Verde: óptimo descanso y energía
+          alertaBienestar: 'VERDE',
+          consecutivosFatiga: 0,
+          checkins: [
+            {
+              clase: 'Clase 2 (Ayer)',
+              fecha: '2026-10-13',
+              energiaInicial: 5, // A tope
+              animoInicial: 5, // Excelente
+              descansoInicial: 'Excelente',
+              esfuerzoFinal: 8,
+              animoFinal: 3, // Mucho mejor
+              desahogoFinal: 'Sí, totalmente',
+            },
+            {
+              clase: 'Clase 1 (Hace 3 días)',
+              fecha: '2026-10-10',
+              energiaInicial: 4, // Con ganas
+              animoInicial: 4, // Bien
+              descansoInicial: 'Bien',
+              esfuerzoFinal: 7,
+              animoFinal: 3, // Mucho mejor
+              desahogoFinal: 'Sí, totalmente',
+            },
+          ],
           perfilDeportivo: {
             objetivo: 'Estética',
             deporte: 'Fitness General',
@@ -86,6 +186,45 @@ export async function GET() {
               fechaAsignada: new Date().toISOString(),
             },
           ],
+        },
+        {
+          id: 'demo-alumno-3',
+          nombre: 'Martín',
+          apellido: 'Benítez',
+          email: 'martin.b@ejemplo.com',
+          whatsapp: '+54 9 11 5555-0303',
+          peso: 82.0,
+          altura: 181,
+          lesiones: 'Sobrecarga en lumbares tras partidos de fin de semana',
+          estadoPago: 'ACTIVO',
+          tipoPlan: 'PREMIUM',
+          createdAt: new Date().toISOString(),
+          // Alerta Amarilla: 1 clase reciente de bajo descanso / estrés
+          alertaBienestar: 'AMARILLA',
+          consecutivosFatiga: 1,
+          checkins: [
+            {
+              clase: 'Clase 1 (Ayer)',
+              fecha: '2026-10-13',
+              energiaInicial: 2, // Bajo
+              animoInicial: 2, // Desmotivado
+              descansoInicial: 'Mal',
+              esfuerzoFinal: 7,
+              animoFinal: 2, // Igual
+              desahogoFinal: 'Un poco',
+            },
+          ],
+          perfilDeportivo: {
+            objetivo: 'Salud y Prevención',
+            deporte: 'Básquet',
+            club: true,
+            nivel: 'Intermedio',
+            focos: 'Movilidad, Fuerza Lumbar',
+            disponibilidad: '3 días',
+            rmEstimado: 'Sentadilla 90kg',
+            puntosDebiles: 'Cadena posterior y core anterior',
+          },
+          rutinasComoAlumno: [],
         },
       ];
     }

@@ -107,6 +107,28 @@ CREATE TABLE IF NOT EXISTS evaluaciones (
 );
 
 -- ========================================================================
+-- TABLA 4: rutinas_realizadas (Check-in Pre y Post Entrenamiento)
+-- Guarda la energía inicial, ánimo, descanso y esfuerzo (RPE) del alumno.
+-- ========================================================================
+CREATE TABLE IF NOT EXISTS rutinas_realizadas (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  alumno_id INT NOT NULL,
+  rutina_id VARCHAR(100),
+  fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  energia_inicial INT,        -- 1 (Agotado) a 5 (A tope)
+  animo_inicial INT,          -- 1 (Muy estresado) a 5 (Excelente)
+  descanso_inicial VARCHAR(50), -- Mal, Regular, Bien, Excelente
+  animo_final INT,            -- 1 (Peor), 2 (Igual), 3 (Mucho mejor)
+  esfuerzo_final INT,         -- 1 a 10 (Escala RPE)
+  desahogo_final VARCHAR(50), -- Sí totalmente, Un poco, No sigo a mil
+  alerta_fatiga BOOLEAN DEFAULT FALSE,
+  CONSTRAINT fk_rutina_realizada_alumno
+    FOREIGN KEY (alumno_id)
+    REFERENCES alumnos(id)
+    ON DELETE CASCADE
+);
+
+-- ========================================================================
 -- DATOS INICIALES DE EJEMPLO
 -- Insertamos los 2 planes principales para que la base de datos ya tenga datos.
 -- ========================================================================
@@ -114,3 +136,4 @@ INSERT INTO planes (nombre, precio_mensual, descripcion, es_destacado) VALUES
 ('Plan Base', 29.99, 'Rutina general estructurada por fases, guía de nutrición en PDF y acceso a la comunidad privada de entrenamiento.', FALSE),
 ('Plan Premium Personalizado', 69.99, 'Planificación 100% personalizada según tu cuestionario, ajustes semanales, revisión de técnica en video y WhatsApp directo 24/7 con el entrenador.', TRUE)
 ON DUPLICATE KEY UPDATE nombre = VALUES(nombre);
+

@@ -172,10 +172,46 @@ model Rutina {
   // Una rutina se divide estrictamente en 3 Bloques: Movilidad, Activación, Desarrollo
   bloques       Bloque[]
 
+  // Check-in Pre-Entrenamiento (UX rápido de 1 clic)
+  energiaInicial      Int?     // 1 (Agotado/a) al 5 (A tope)
+  animoInicial        Int?     // 1 (Muy estresado) al 5 (Excelente)
+  descansoInicial     String?  // Mal, Regular, Bien, Excelente
+
+  // Check-in Post-Entrenamiento (Impacto y RPE)
+  animoFinal          Int?     // 1 (Peor), 2 (Igual), 3 (Mucho mejor)
+  esfuerzoFinal       Int?     // 1 al 10 (Escala RPE de esfuerzo)
+  desahogoFinal       String?  // Sí totalmente, Un poco, No sigo a mil
+  fechaCompletada     DateTime?
+
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 
   @@map("rutinas")
+}
+
+// ========================================================================
+// MODELO: RutinaRealizada (Registro histórico y feedback de cada sesión)
+// ========================================================================
+model RutinaRealizada {
+  id              String       @id @default(cuid())
+  rutinaId        String?
+  alumnoId        String
+  fecha           DateTime     @default(now())
+
+  // Check-in Pre-entrenamiento
+  energiaInicial  Int?         // 1 (Agotado) al 5 (A tope)
+  animoInicial    Int?         // 1 (Muy estresado) al 5 (Excelente)
+  descansoInicial String?      // Mal, Regular, Bien, Excelente
+
+  // Check-in Post-entrenamiento
+  animoFinal      Int?         // 1 (Peor), 2 (Igual), 3 (Mucho mejor)
+  esfuerzoFinal   Int?         // 1 al 10 (Escala RPE de esfuerzo)
+  desahogoFinal   String?      // Sí totalmente, Un poco, No sigo a mil
+
+  alertaFatiga    Boolean      @default(false) // True si marcó Agotado o Muy Estresado
+  createdAt       DateTime     @default(now())
+
+  @@map("rutinas_realizadas")
 }
 
 // ========================================================================

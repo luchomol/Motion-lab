@@ -221,6 +221,24 @@ export default function StudentHub({
                         </span>
                       )}
 
+                      {isCompletado && dia.esfuerzoFinal && (
+                        <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-blue-500/20 text-sky-400 border border-blue-500/30">
+                          RPE {dia.esfuerzoFinal}/10
+                        </span>
+                      )}
+
+                      {isCompletado && dia.energiaInicial && (
+                        <span className="text-[10px] font-black uppercase px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-300 border border-sky-500/20">
+                          🔋 {dia.energiaInicial}/5
+                        </span>
+                      )}
+
+                      {isCompletado && dia.animoFinal && (
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-900 text-slate-300 border border-slate-800">
+                          {dia.animoFinal === 1 ? '📉 Peor' : dia.animoFinal === 2 ? '➖ Igual' : '📈 Renovado'}
+                        </span>
+                      )}
+
                       {isSugeridoHoy && (
                         <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30">
                           Sugerido Hoy

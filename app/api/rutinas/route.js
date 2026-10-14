@@ -67,7 +67,15 @@ export async function GET(request) {
         ejerciciosCount: rutina.bloques.reduce((acc, b) => acc + b.ejercicios.length, 0),
         bloquesCount: rutina.bloques.length,
         // Mantenemos los bloques enteros por si el frontend los usa desde aquí
-        bloques: rutina.bloques
+        bloques: rutina.bloques,
+        // Check-in pre y post entrenamiento
+        energiaInicial: rutina.energiaInicial,
+        animoInicial: rutina.animoInicial,
+        descansoInicial: rutina.descansoInicial,
+        animoFinal: rutina.animoFinal,
+        esfuerzoFinal: rutina.esfuerzoFinal,
+        desahogoFinal: rutina.desahogoFinal,
+        fechaCompletada: rutina.fechaCompletada,
       }));
 
       return NextResponse.json({

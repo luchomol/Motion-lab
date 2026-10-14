@@ -91,10 +91,20 @@ export default function TrainingContainer({ alumnoId = 'demo-alumno-1' }) {
     };
     setRutinasGuardadas(nuevasRutinas);
 
-    // 2. Marcar el día como COMPLETADO en el cronograma semanal
+    // 2. Marcar el día como COMPLETADO en el cronograma semanal y registrar sus check-ins
     const nuevoPlan = planSemanal.map((dia) => {
       if (dia.id === diaSeleccionadoId) {
-        return { ...dia, estado: 'COMPLETADO' };
+        return { 
+          ...dia, 
+          estado: 'COMPLETADO',
+          energiaInicial: rutinaActualizada.energiaInicial,
+          animoInicial: rutinaActualizada.animoInicial,
+          descansoInicial: rutinaActualizada.descansoInicial,
+          animoFinal: rutinaActualizada.animoFinal,
+          esfuerzoFinal: rutinaActualizada.esfuerzoFinal,
+          desahogoFinal: rutinaActualizada.desahogoFinal,
+          fechaCompletada: rutinaActualizada.fechaCompletada,
+        };
       }
       return dia;
     });

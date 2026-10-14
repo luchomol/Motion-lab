@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 /**
  * ========================================================================
@@ -15,10 +15,12 @@
 import { useState, useEffect, useMemo } from 'react';
 import { 
   Check, ChevronDown, ChevronUp, AlertCircle, ArrowLeft, Trophy, 
-  Calendar, Save, Edit3, Sparkles 
+  Calendar, Save, Edit3, Sparkles, Zap, Heart, Activity 
 } from 'lucide-react';
 import ExerciseCard from './ExerciseCard';
 import VideoPlayer from './VideoPlayer';
+import PreWorkoutModal from './PreWorkoutModal';
+import PostWorkoutModal from './PostWorkoutModal';
 
 export default function WorkoutView({ 
   alumnoId = 'demo-alumno-1', 
@@ -32,6 +34,14 @@ export default function WorkoutView({
   const [cargando, setCargando] = useState(!rutinaInicial);
   const [videoActivoId, setVideoActivoId] = useState(null);
   
+  // Modales de Check-in Pre y Post entrenamiento (UX rápida de 1 clic)
+  const [mostrarModalPre, setMostrarModalPre] = useState(false);
+  const [mostrarModalPost, setMostrarModalPost] = useState(false);
+  const [guardandoPost, setGuardandoPost] = useState(false);
+  const [preCheckinHecho, setPreCheckinHecho] = useState(
+    Boolean(rutinaInicial?.energiaInicial)
+  );
+
   // Estado para los acordeones
   const [acordeones, setAcordeones] = useState({
     MOVILIDAD: true,
@@ -43,6 +53,11 @@ export default function WorkoutView({
     if (rutinaInicial) {
       setRutina(rutinaInicial);
       setCargando(false);
+      if (rutinaInicial.energiaInicial) {
+        setPreCheckinHecho(true);
+      } else if (!esModoEdicion) {
+        setMostrarModalPre(true);
+      }
       return;
     }
 
@@ -54,6 +69,11 @@ export default function WorkoutView({
         const data = await res.json();
         if (data.success && data.rutina) {
           setRutina(data.rutina);
+          if (data.rutina.energiaInicial) {
+            setPreCheckinHecho(true);
+          } else if (!esModoEdicion) {
+            setMostrarModalPre(true);
+          }
         }
       } catch (err) {
         console.error('Error cargando rutina:', err);
@@ -62,7 +82,7 @@ export default function WorkoutView({
       }
     }
     cargarRutina();
-  }, [alumnoId, diaId, rutinaInicial]);
+  }, [alumnoId, diaId, rutinaInicial, esModoEdicion]);
 
   // Actualizar checkbox de Movilidad o ActivaciÃ³n
   const toggleCheckMovilidad = async (ejercicioId, estadoActual) => {
@@ -144,11 +164,69 @@ export default function WorkoutView({
     return Math.round((seriesCompletadas / totalSeries) * 100);
   }, [rutina]);
 
+  // Guardar respuestas del modal Pre-Entrenamiento (1 clic)
+  const handleGuardarPreWorkout = async (datosPre) => {
+    setPreCheckinHecho(true);
+    setMostrarModalPre(false);
+    const rutinaActualizada = {
+      ...rutina,
+      ...datosPre,
+    };
+    setRutina(rutinaActualizada);
+
+    try {
+      await fetch('/api/entrenamiento/checkin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          rutinaId: rutina?.id,
+          alumnoId,
+          tipo: 'PRE',
+          ...datosPre,
+        }),
+      });
+    } catch (e) {
+      console.warn('Error guardando check-in pre-entreno:', e);
+    }
+  };
+
+  // Abrir modal de evaluación post-entrenamiento (RPE, impacto anímico, desahogo)
   const handleFinalizarEntrenamiento = () => {
-    if (onFinalizar) {
-      onFinalizar(rutina);
-    } else if (onVolver) {
-      onVolver();
+    setMostrarModalPost(true);
+  };
+
+  // Guardar respuestas del modal Post-Entrenamiento y finalizar la sesión
+  const handleGuardarPostWorkout = async (datosPost) => {
+    setGuardandoPost(true);
+    const rutinaFinal = {
+      ...rutina,
+      ...datosPost,
+      fechaCompletada: new Date().toISOString(),
+      estado: 'COMPLETADA',
+    };
+    setRutina(rutinaFinal);
+
+    try {
+      await fetch('/api/entrenamiento/checkin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          rutinaId: rutina?.id,
+          alumnoId,
+          tipo: 'POST',
+          ...datosPost,
+        }),
+      });
+    } catch (e) {
+      console.warn('Error guardando check-out post-entreno:', e);
+    } finally {
+      setGuardandoPost(false);
+      setMostrarModalPost(false);
+      if (onFinalizar) {
+        onFinalizar(rutinaFinal);
+      } else if (onVolver) {
+        onVolver();
+      }
     }
   };
 
@@ -255,6 +333,41 @@ export default function WorkoutView({
               style={{ width: `${progreso}%` }}
             />
           </div>
+        </div>
+
+        {/* PILL DE ESTADO CHECK-IN PRE-ENTRENO */}
+        <div className="mt-3.5">
+          {rutina?.energiaInicial ? (
+            <div className="p-2.5 rounded-xl bg-blue-950/40 border border-sky-500/30 flex items-center justify-between gap-2 text-xs">
+              <div className="flex items-center gap-2 text-sky-300 font-semibold truncate">
+                <Zap className="w-3.5 h-3.5 text-sky-400 shrink-0 fill-current" />
+                <span className="truncate">
+                  Check-in: <strong>Batería {rutina.energiaInicial}/5</strong> • {rutina.animoInicial === 1 ? '😫 Estresado' : rutina.animoInicial === 2 ? '🙁 Desmotivado' : rutina.animoInicial === 3 ? '😐 Neutral' : rutina.animoInicial === 4 ? '🙂 Bien' : '🤩 A tope'} {rutina.descansoInicial ? `• 😴 ${rutina.descansoInicial}` : ''}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMostrarModalPre(true)}
+                className="text-[10px] font-bold text-sky-400 hover:text-white px-2 py-1 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 transition-colors shrink-0"
+              >
+                Modificar
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setMostrarModalPre(true)}
+              className="w-full p-2.5 rounded-xl bg-gradient-to-r from-blue-900/30 to-sky-900/20 border border-blue-500/30 hover:border-blue-400 flex items-center justify-between gap-2 text-xs text-left transition-all"
+            >
+              <div className="flex items-center gap-2 text-slate-300">
+                <Zap className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                <span className="text-slate-300">¿Cómo venís hoy? 2 preguntas de 1 clic para Matías.</span>
+              </div>
+              <span className="text-[10px] font-black text-white px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 shrink-0">
+                Check-in
+              </span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -475,6 +588,23 @@ export default function WorkoutView({
           </button>
         )}
       </div>
+
+      {/* MODAL CHECK-IN PRE-ENTRENAMIENTO (1 CLIC) */}
+      <PreWorkoutModal
+        isOpen={mostrarModalPre}
+        onClose={() => setMostrarModalPre(false)}
+        onSubmit={handleGuardarPreWorkout}
+        nombreRutina={rutina.nombre}
+      />
+
+      {/* MODAL CHECK-OUT POST-ENTRENAMIENTO (RPE E IMPACTO ANÍMICO) */}
+      <PostWorkoutModal
+        isOpen={mostrarModalPost}
+        onClose={() => setMostrarModalPost(false)}
+        onSubmit={handleGuardarPostWorkout}
+        nombreRutina={rutina.nombre}
+        guardando={guardandoPost}
+      />
 
     </div>
   );
