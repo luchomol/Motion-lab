@@ -46,18 +46,23 @@ export default function Footer() {
             </h4>
             <ul className="space-y-3 text-xs sm:text-sm font-semibold">
               <li>
-                <a href="#sobre-mi" className={`transition-colors ${isSunlight ? 'hover:text-blue-700' : 'hover:text-sky-400'}`}>
+                <a href="/#sobre-mi" className={`transition-colors ${isSunlight ? 'hover:text-blue-700' : 'hover:text-sky-400'}`}>
                   Metodología MOTION LAB
                 </a>
               </li>
               <li>
-                <a href="#planes" className={`transition-colors ${isSunlight ? 'hover:text-blue-700' : 'hover:text-sky-400'}`}>
-                  Plan Base vs Plan Premium
+                <a href="/#galeria" className={`transition-colors ${isSunlight ? 'hover:text-blue-700' : 'hover:text-sky-400'}`}>
+                  Ecosistema & Pista
                 </a>
               </li>
               <li>
-                <a href="#faq" className={`transition-colors ${isSunlight ? 'hover:text-blue-700' : 'hover:text-sky-400'}`}>
-                  Preguntas Frecuentes
+                <a href="/onboarding" className={`transition-colors ${isSunlight ? 'hover:text-blue-700' : 'hover:text-sky-400'}`}>
+                  Onboarding Alumno
+                </a>
+              </li>
+              <li>
+                <a href="/entrenamiento" className={`transition-colors ${isSunlight ? 'hover:text-blue-700' : 'hover:text-sky-400'}`}>
+                  Mi Entrenamiento
                 </a>
               </li>
             </ul>

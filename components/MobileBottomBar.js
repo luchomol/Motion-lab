@@ -13,7 +13,7 @@
  */
 
 import Link from 'next/link';
-import { Sun, Moon, Dumbbell, Sparkles, MessageCircle } from 'lucide-react';
+import { Sun, Moon, Dumbbell, UserPlus, MessageCircle } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
 
 export default function MobileBottomBar() {
@@ -61,17 +61,17 @@ export default function MobileBottomBar() {
           )}
         </button>
 
-        {/* 2. PLANES */}
+        {/* 2. ONBOARDING */}
         <Link
-          href="/#planes"
+          href="/onboarding"
           className={`flex flex-col items-center justify-center h-full rounded-xl transition-all active:scale-95 touch-target ${
             isSunlight
               ? 'text-blue-700 hover:bg-slate-100 font-bold'
               : 'text-sky-400 hover:bg-slate-800/60 font-semibold'
           }`}
         >
-          <Sparkles className="w-5 h-5" />
-          <span className="text-[11px] mt-0.5 font-bold">Planes</span>
+          <UserPlus className="w-5 h-5" />
+          <span className="text-[11px] mt-0.5 font-bold">Alta</span>
         </Link>
 
         {/* 3. MI ENTRENAMIENTO */}

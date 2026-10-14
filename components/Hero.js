@@ -8,7 +8,8 @@
  * Optimizado para máxima visibilidad en pantallas de teléfonos bajo sol directo.
  */
 
-import { ArrowRight, Sparkles, Timer } from 'lucide-react';
+import { ArrowRight, Sparkles, Timer, MessageCircle } from 'lucide-react';
+import Link from 'next/link';
 import { useTheme } from './ThemeProvider';
 
 export default function Hero() {
@@ -61,12 +62,25 @@ export default function Hero() {
 
             {/* BOTONES DE ACCIÓN (TOUCH-TARGET MÓVIL ÓPTIMO) */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-8">
-              <a
-                href="#planes"
+              <Link
+                href="/onboarding"
                 className="inline-flex items-center justify-center gap-2.5 px-8 py-4 text-base font-black text-white bg-gradient-to-r from-blue-700 via-blue-600 to-sky-500 hover:from-blue-600 hover:to-sky-400 rounded-full transition-all shadow-xl shadow-blue-600/30 active:scale-95 touch-target"
               >
-                <span>Ver Plan Base & Premium</span>
+                <span>Comenzar Onboarding</span>
                 <ArrowRight className="w-5 h-5" />
+              </Link>
+              <a
+                href="https://wa.me/5493624654911?text=¡Hola%20Coach%20Matías!%20Quisiera%20consultar%20por%20la%20planificación%20de%20Motion%20Lab."
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`inline-flex items-center justify-center gap-2 px-6 py-4 text-base font-bold rounded-full transition-all border touch-target ${
+                  isSunlight
+                    ? 'bg-slate-100 hover:bg-slate-200 text-slate-900 border-slate-300'
+                    : 'bg-slate-900 hover:bg-slate-800 text-white border-slate-700'
+                }`}
+              >
+                <MessageCircle className="w-5 h-5 text-emerald-500" />
+                <span>Consultar por WhatsApp</span>
               </a>
             </div>
 

@@ -66,20 +66,20 @@ export default function Navbar() {
               Panel Matías
             </Link>
             <a 
-              href="/#planes" 
+              href="/#sobre-mi" 
               className={`transition-colors font-semibold ${
                 isSunlight ? 'text-slate-800 hover:text-blue-700' : 'text-slate-200 hover:text-sky-400'
               }`}
             >
-              Planes
+              Metodología
             </a>
             <a 
-              href="/#faq" 
+              href="/#galeria" 
               className={`transition-colors font-semibold ${
                 isSunlight ? 'text-slate-800 hover:text-blue-700' : 'text-slate-200 hover:text-sky-400'
               }`}
             >
-              FAQ
+              Ecosistema
             </a>
           </div>
 
@@ -120,10 +120,10 @@ export default function Navbar() {
             </Link>
 
             <Link
-              href="/#planes"
+              href="/onboarding"
               className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-black uppercase tracking-wider text-white bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-500 hover:to-sky-400 rounded-full transition-all shadow-md shadow-blue-500/25 hover:scale-105 touch-target"
             >
-              <span>Ver Planes</span>
+              <span>Comenzar</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -217,21 +217,30 @@ export default function Navbar() {
             <span>Panel del Entrenador (Matías)</span>
           </Link>
           <a
-            href="/#planes"
+            href="/#sobre-mi"
             onClick={() => setMenuAbierto(false)}
             className={`block text-base font-semibold py-2.5 touch-target ${
               isSunlight ? 'text-slate-900 hover:text-blue-700' : 'text-slate-200 hover:text-sky-400'
             }`}
           >
-            Planes de Entrenamiento
+            Metodología & Enfoque
+          </a>
+          <a
+            href="/#galeria"
+            onClick={() => setMenuAbierto(false)}
+            className={`block text-base font-semibold py-2.5 touch-target ${
+              isSunlight ? 'text-slate-900 hover:text-blue-700' : 'text-slate-200 hover:text-sky-400'
+            }`}
+          >
+            Ecosistema MOTION LAB
           </a>
           <div className="pt-2">
             <Link
-              href="/#planes"
+              href="/onboarding"
               onClick={() => setMenuAbierto(false)}
               className="w-full block text-center py-3.5 text-sm font-black uppercase tracking-wider text-white bg-gradient-to-r from-blue-600 to-sky-500 rounded-xl shadow-md touch-target"
             >
-              Ver Planes
+              Comenzar Onboarding
             </Link>
           </div>
         </div>
