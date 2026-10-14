@@ -4,14 +4,13 @@
  * ========================================================================
  * Pantalla interactiva donde el alumno:
  * 1. Accede a su Hub con el entrenamiento de hoy y cronograma semanal.
- * 2. Puede saltar de día o recuperar días pendientes de la semana.
+ * 2. Puede alternar al Modo Soleado para ver sus series bajo el sol en pista o campo.
  * 3. Registra series interactivas con auto-minimización y notas técnicas.
  */
 
 import TrainingContainer from '@/components/training/TrainingContainer';
-import MotionLabLogo from '@/components/MotionLabLogo';
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import TrainingHeader from '@/components/training/TrainingHeader';
+import MobileBottomBar from '@/components/MobileBottomBar';
 
 export const metadata = {
   title: 'Mi Entrenamiento • Plan Semanal | MOTION LAB',
@@ -20,30 +19,23 @@ export const metadata = {
 
 export default function EntrenamientoPage() {
   return (
-    <div className="min-h-screen bg-[#05070c] text-slate-100 flex flex-col justify-between py-8 px-4 sm:px-6 lg:px-8 relative overflow-hidden hero-gradient">
+    <div className="min-h-screen flex flex-col justify-between py-6 px-4 sm:px-6 lg:px-8 relative overflow-hidden transition-colors duration-200">
       
-      {/* CABECERA */}
-      <header className="max-w-4xl mx-auto w-full flex items-center justify-between pb-6 border-b border-slate-800/80 mb-6">
-        <Link href="/" className="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-sky-400 transition-colors">
-          <ArrowLeft className="w-4 h-4" />
-          <span>Volver al inicio</span>
-        </Link>
-
-        <Link href="/" className="group">
-          <MotionLabLogo className="group-hover:scale-105 transition-transform" />
-        </Link>
-      </header>
+      {/* CABECERA CON TOGGLE SOLEADO */}
+      <TrainingHeader />
 
       {/* CONTENIDO PRINCIPAL */}
-      <main className="flex-grow max-w-4xl mx-auto w-full">
+      <main className="flex-grow max-w-4xl mx-auto w-full pb-20 lg:pb-8">
         <TrainingContainer />
       </main>
 
       {/* PIE */}
-      <footer className="max-w-4xl mx-auto w-full text-center pt-12 text-xs text-slate-600">
+      <footer className="max-w-4xl mx-auto w-full text-center pt-8 pb-16 lg:pb-0 text-xs text-slate-500">
         © {new Date().getFullYear()} MOTION LAB • Planificación Semanal y Planilla Digital de Entrenamiento.
       </footer>
 
+      {/* BARRA MÓVIL INFERIOR */}
+      <MobileBottomBar />
     </div>
   );
 }

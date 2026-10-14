@@ -1,19 +1,28 @@
+'use client';
+
 /**
  * ========================================================================
  * COMPONENTE: Pie de Página MOTION LAB (Footer.js)
  * ========================================================================
  * Incluye logotipo oficial, enlaces rápidos, canales de contacto y
  * aviso de responsabilidad médica deportiva.
+ * Optimizado para alto contraste en modo soleado y móvil.
  */
 
 import { Instagram, Mail, MessageCircle } from 'lucide-react';
 import MotionLabLogo from './MotionLabLogo';
+import { useTheme } from './ThemeProvider';
 
 export default function Footer() {
   const anioActual = new Date().getFullYear();
+  const { isSunlight } = useTheme();
 
   return (
-    <footer className="bg-[#030509] border-t border-slate-800 text-slate-400 py-12">
+    <footer className={`border-t py-12 transition-colors duration-200 ${
+      isSunlight 
+        ? 'bg-slate-100 border-slate-300 text-slate-700' 
+        : 'bg-[#030509] border-slate-800 text-slate-300'
+    }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
@@ -21,30 +30,39 @@ export default function Footer() {
           {/* COLUMNA 1: Marca y Misión */}
           <div className="md:col-span-2 space-y-4">
             <MotionLabLogo />
-            <p className="text-xs sm:text-sm text-slate-400 max-w-md leading-relaxed">
+            <p className={`text-xs sm:text-sm max-w-md leading-relaxed font-medium ${
+              isSunlight ? 'text-slate-800' : 'text-slate-300'
+            }`}>
               Centro de rendimiento deportivo y planificación física individualizada. Ciencia, biomecánica y sobrecarga progresiva aplicadas a tu objetivo.
             </p>
           </div>
 
           {/* COLUMNA 2: Enlaces Rápidos */}
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-white mb-4">
+            <h4 className={`text-xs font-black uppercase tracking-wider mb-4 ${
+              isSunlight ? 'text-slate-950' : 'text-white'
+            }`}>
               Navegación
             </h4>
-            <ul className="space-y-2.5 text-xs sm:text-sm">
+            <ul className="space-y-3 text-xs sm:text-sm font-semibold">
               <li>
-                <a href="#sobre-mi" className="hover:text-sky-400 transition-colors">
+                <a href="/#sobre-mi" className={`transition-colors ${isSunlight ? 'hover:text-blue-700' : 'hover:text-sky-400'}`}>
                   Metodología MOTION LAB
                 </a>
               </li>
               <li>
-                <a href="#planes" className="hover:text-sky-400 transition-colors">
-                  Plan Base vs Plan Premium
+                <a href="/#galeria" className={`transition-colors ${isSunlight ? 'hover:text-blue-700' : 'hover:text-sky-400'}`}>
+                  Ecosistema & Pista
                 </a>
               </li>
               <li>
-                <a href="#faq" className="hover:text-sky-400 transition-colors">
-                  Preguntas Frecuentes
+                <a href="/onboarding" className={`transition-colors ${isSunlight ? 'hover:text-blue-700' : 'hover:text-sky-400'}`}>
+                  Onboarding Alumno
+                </a>
+              </li>
+              <li>
+                <a href="/entrenamiento" className={`transition-colors ${isSunlight ? 'hover:text-blue-700' : 'hover:text-sky-400'}`}>
+                  Mi Entrenamiento
                 </a>
               </li>
             </ul>
@@ -52,28 +70,32 @@ export default function Footer() {
 
           {/* COLUMNA 3: Canales de Contacto */}
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-white mb-4">
+            <h4 className={`text-xs font-black uppercase tracking-wider mb-4 ${
+              isSunlight ? 'text-slate-950' : 'text-white'
+            }`}>
               Canales Oficiales
             </h4>
-            <ul className="space-y-2.5 text-xs sm:text-sm">
+            <ul className="space-y-3 text-xs sm:text-sm font-semibold">
               <li className="flex items-center gap-2">
-                <MessageCircle className="w-4 h-4 text-sky-400" />
+                <MessageCircle className={`w-4 h-4 ${isSunlight ? 'text-emerald-700' : 'text-emerald-400'}`} />
                 <a 
                   href="https://wa.me/5493624654911" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="hover:text-white transition-colors"
+                  className={`transition-colors ${isSunlight ? 'hover:text-blue-700 text-slate-800' : 'hover:text-white'}`}
                 >
                   WhatsApp: +54 9 362 465-4911
                 </a>
               </li>
               <li className="flex items-center gap-2">
-                <Mail className="w-4 h-4 text-sky-400" />
-                <span>contacto@motionlab.fit</span>
+                <Mail className={`w-4 h-4 ${isSunlight ? 'text-blue-700' : 'text-sky-400'}`} />
+                <span className={isSunlight ? 'text-slate-800' : ''}>contacto@motionlab.fit</span>
               </li>
               <li className="flex items-center gap-2">
-                <Instagram className="w-4 h-4 text-sky-400" />
-                <span className="hover:text-white cursor-pointer">@motionlab.performance</span>
+                <Instagram className={`w-4 h-4 ${isSunlight ? 'text-blue-700' : 'text-sky-400'}`} />
+                <span className={`cursor-pointer ${isSunlight ? 'hover:text-blue-700 text-slate-800' : 'hover:text-white'}`}>
+                  @motionlab.performance
+                </span>
               </li>
             </ul>
           </div>
@@ -81,11 +103,13 @@ export default function Footer() {
         </div>
 
         {/* LÍNEA FINAL */}
-        <div className="pt-8 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+        <div className={`pt-8 border-t flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-medium ${
+          isSunlight ? 'border-slate-300 text-slate-600' : 'border-slate-800/80 text-slate-400'
+        }`}>
           <p>
             © {anioActual} MOTION LAB. Todos los derechos reservados. Desarrollado con Next.js, React y MySQL.
           </p>
-          <p className="text-[11px] text-slate-600 max-w-sm text-center sm:text-right">
+          <p className="text-[11px] max-w-sm text-center sm:text-right font-medium">
             Aviso médico: Consulta con un profesional de la salud antes de iniciar planes de entrenamiento de alta exigencia.
           </p>
         </div>
