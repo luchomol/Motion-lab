@@ -9,6 +9,57 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
+import { obtenerCheckinsDeStore } from '@/lib/fallbackStore';
+
+function calcularBienestar(checkins) {
+  if (!checkins || checkins.length === 0) {
+    return { alertaBienestar: 'VERDE', consecutivosFatiga: 0 };
+  }
+
+  const ultimo = checkins[0]; // El check-in más reciente
+
+  // Fatiga crítica/extrema en la última sesión:
+  // 1. Energía 1 (Agotado/a)
+  // 2. Ánimo 1 (Muy estresado)
+  // 3. Post-entreno: RPE >= 9 con ánimo peor
+  const fatigaExtremaUltimo =
+    (ultimo.energiaInicial !== null && ultimo.energiaInicial !== undefined && Number(ultimo.energiaInicial) <= 1) ||
+    (ultimo.animoInicial !== null && ultimo.animoInicial !== undefined && Number(ultimo.animoInicial) <= 1) ||
+    (ultimo.esfuerzoFinal !== null && ultimo.esfuerzoFinal !== undefined && Number(ultimo.esfuerzoFinal) >= 9 && Number(ultimo.animoFinal) === 1);
+
+  // Fatiga moderada en la última sesión:
+  // Energía 2 (Bajo), Ánimo 2 (Desmotivado), Descanso 'Mal', o RPE >= 9
+  const fatigaModeradaUltimo =
+    (ultimo.energiaInicial !== null && ultimo.energiaInicial !== undefined && Number(ultimo.energiaInicial) <= 2) ||
+    (ultimo.animoInicial !== null && ultimo.animoInicial !== undefined && Number(ultimo.animoInicial) <= 2) ||
+    ultimo.descansoInicial === 'Mal' ||
+    (ultimo.esfuerzoFinal !== null && ultimo.esfuerzoFinal !== undefined && Number(ultimo.esfuerzoFinal) >= 9) ||
+    ultimo.desahogoFinal === 'No, sigo a mil';
+
+  // Conteo de sesiones consecutivas con fatiga
+  let consecutivos = 0;
+  for (const c of checkins) {
+    const esFatiga =
+      (c.energiaInicial !== null && c.energiaInicial !== undefined && Number(c.energiaInicial) <= 2) ||
+      (c.animoInicial !== null && c.animoInicial !== undefined && Number(c.animoInicial) <= 2) ||
+      c.descansoInicial === 'Mal' ||
+      (c.esfuerzoFinal !== null && c.esfuerzoFinal !== undefined && Number(c.esfuerzoFinal) >= 9);
+
+    if (esFatiga) {
+      consecutivos++;
+    } else {
+      break;
+    }
+  }
+
+  if (fatigaExtremaUltimo || consecutivos >= 2) {
+    return { alertaBienestar: 'ROJA', consecutivosFatiga: Math.max(consecutivos, 1) };
+  } else if (fatigaModeradaUltimo || consecutivos >= 1) {
+    return { alertaBienestar: 'AMARILLA', consecutivosFatiga: consecutivos };
+  } else {
+    return { alertaBienestar: 'VERDE', consecutivosFatiga: 0 };
+  }
+}
 
 export async function GET() {
   try {
@@ -34,36 +85,37 @@ export async function GET() {
               fechaCompletada: true,
             },
             orderBy: { createdAt: 'desc' },
-            take: 5,
+            take: 10,
           },
         },
         orderBy: { createdAt: 'desc' },
       });
 
-      // Calcular alertas de fatiga para alumnos reales
+      // Mapear checkins y calcular alertas para alumnos de base de datos
       alumnos = alumnos.map((alumno) => {
         const rutinas = alumno.rutinasComoAlumno || [];
-        const checkinsValidos = rutinas.filter((r) => r.energiaInicial || r.animoInicial);
-        let fatigaConsecutiva = 0;
-        for (const c of checkinsValidos) {
-          if (c.energiaInicial <= 1 || c.animoInicial <= 1) {
-            fatigaConsecutiva++;
-          } else {
-            break;
-          }
-        }
-        let alertaBienestar = 'VERDE';
-        if (fatigaConsecutiva >= 3) {
-          alertaBienestar = 'ROJA';
-        } else if (fatigaConsecutiva > 0 || (checkinsValidos[0] && (checkinsValidos[0].energiaInicial <= 2 || checkinsValidos[0].animoInicial <= 2))) {
-          alertaBienestar = 'AMARILLA';
-        }
+        const checkinsRutinas = rutinas
+          .filter((r) => r.energiaInicial || r.animoInicial || r.descansoInicial)
+          .map((r, i) => ({
+            clase: r.nombre || `Sesión ${i + 1}`,
+            fecha: r.fechaCompletada ? new Date(r.fechaCompletada).toISOString().split('T')[0] : 'Reciente',
+            energiaInicial: r.energiaInicial,
+            animoInicial: r.animoInicial,
+            descansoInicial: r.descansoInicial,
+            esfuerzoFinal: r.esfuerzoFinal,
+            animoFinal: r.animoFinal,
+            desahogoFinal: r.desahogoFinal,
+          }));
+
+        const checkinsStore = obtenerCheckinsDeStore(alumno.id);
+        const checkinsCompletos = [...checkinsStore, ...checkinsRutinas];
+        const { alertaBienestar, consecutivosFatiga } = calcularBienestar(checkinsCompletos);
 
         return {
           ...alumno,
           alertaBienestar,
-          consecutivosFatiga: fatigaConsecutiva,
-          checkins: checkinsValidos,
+          consecutivosFatiga,
+          checkins: checkinsCompletos,
         };
       });
     } catch (dbErr) {
@@ -228,6 +280,26 @@ export async function GET() {
         },
       ];
     }
+
+    // Sincronizar check-ins en memoria (fallbackStore) para todos los alumnos
+    alumnos = alumnos.map((alumno) => {
+      const checkinsStore = obtenerCheckinsDeStore(alumno.id);
+      if (checkinsStore && checkinsStore.length > 0) {
+        // Filtrar duplicados por id si ya existen
+        const existentesIds = new Set((alumno.checkins || []).map((c) => c.id || c.clase));
+        const nuevosDeStore = checkinsStore.filter((c) => !existentesIds.has(c.id));
+        const checkinsCombinados = [...nuevosDeStore, ...(alumno.checkins || [])];
+        const { alertaBienestar, consecutivosFatiga } = calcularBienestar(checkinsCombinados);
+
+        return {
+          ...alumno,
+          alertaBienestar,
+          consecutivosFatiga,
+          checkins: checkinsCombinados,
+        };
+      }
+      return alumno;
+    });
 
     return NextResponse.json({
       success: true,

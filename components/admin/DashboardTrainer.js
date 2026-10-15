@@ -17,7 +17,7 @@
 import { useState, useEffect } from 'react';
 import { 
   Users, CheckCircle2, Clock, Dumbbell, ShieldCheck, 
-  Search, Eye, Plus, Trash2, ArrowRight, X, Sparkles, Activity 
+  Search, Eye, Plus, Trash2, ArrowRight, X, Sparkles, Activity, RotateCcw 
 } from 'lucide-react';
 import RoutineBuilder from './RoutineBuilder';
 
@@ -228,6 +228,18 @@ export default function DashboardTrainer() {
 
   useEffect(() => {
     cargarAlumnos();
+
+    // Actualizar automáticamente al volver a la pestaña de administración
+    const handleFocus = () => cargarAlumnos();
+    window.addEventListener('focus', handleFocus);
+
+    // Sondeo en tiempo real cada 10 segundos para detectar check-ins de fatiga
+    const interval = setInterval(cargarAlumnos, 10000);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      clearInterval(interval);
+    };
   }, []);
 
   // Cambiar estado de pago (PENDIENTE <-> ACTIVO)
@@ -382,6 +394,13 @@ export default function DashboardTrainer() {
             <Plus className="w-5 h-5" />
             <span className="text-xs sm:text-sm">Nuevo Alumno</span>
           </button>
+          <button
+            onClick={cargarAlumnos}
+            title="Actualizar alumnos y alertas"
+            className="p-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition-all"
+          >
+            <RotateCcw className={`w-5 h-5 ${cargando ? 'animate-spin text-sky-400' : ''}`} />
+          </button>
           <div className="px-4 py-2.5 rounded-2xl bg-slate-900 border border-slate-800 text-center">
             <span className="text-xs text-slate-400 block font-medium">Total Alumnos</span>
             <span className="text-xl font-black text-white">{alumnos.length}</span>
@@ -401,7 +420,7 @@ export default function DashboardTrainer() {
           <div className="px-4 py-2.5 rounded-2xl bg-red-500/10 border border-red-500/30 text-center">
             <span className="text-xs text-red-400 block font-bold">Alertas Fatiga</span>
             <span className="text-xl font-black text-red-400">
-              {alumnos.filter((a) => a.alertaBienestar === 'ROJA').length}
+              {alumnos.filter((a) => a.alertaBienestar === 'ROJA' || a.alertaBienestar === 'AMARILLA').length}
             </span>
           </div>
         </div>
@@ -523,12 +542,16 @@ export default function DashboardTrainer() {
                         {alumno.alertaBienestar === 'ROJA' ? (
                           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-red-500/20 text-red-300 border border-red-500/40 text-[11px] font-extrabold animate-pulse">
                             <span>🚨</span>
-                            <span>ALERTA ROJA (3 clases Agotado)</span>
+                            <span>
+                              {alumno.consecutivosFatiga > 1
+                                ? `ALERTA ROJA (${alumno.consecutivosFatiga} sesiones Agotado)`
+                                : 'ALERTA ROJA (Fatiga Extrema / Agotado)'}
+                            </span>
                           </div>
                         ) : alumno.alertaBienestar === 'AMARILLA' ? (
                           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px] font-bold">
                             <span>⚠️</span>
-                            <span>Alerta Amarilla (Fatiga)</span>
+                            <span>Alerta Amarilla (Baja energía / Mal descanso)</span>
                           </div>
                         ) : (
                           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[11px] font-semibold">
