@@ -297,9 +297,13 @@ export default function DashboardTrainer() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           alumnoId: alumnoSeleccionado.id,
-          nombre: nuevaRutina.nombre,
-          descripcion: nuevaRutina.descripcion,
-          bloques: nuevaRutina.bloques,
+          dias: [
+            {
+              nombre: nuevaRutina.nombre,
+              descripcion: nuevaRutina.descripcion,
+              bloques: nuevaRutina.bloques,
+            },
+          ],
         }),
       });
 
@@ -308,9 +312,12 @@ export default function DashboardTrainer() {
         mostrarAviso(`¡Rutina "${nuevaRutina.nombre}" asignada con éxito!`);
         setModalAbierto(false);
         cargarAlumnos();
+      } else {
+        alert(data.error || 'No se pudo asignar la rutina');
       }
     } catch (err) {
       console.error('Error al asignar rutina:', err);
+      alert('Error de conexión al asignar la rutina');
     } finally {
       setGuardandoRutina(false);
     }
@@ -953,9 +960,12 @@ export default function DashboardTrainer() {
                             mostrarAviso(`¡Rutina multi-día asignada con éxito!`);
                             setModalAbierto(false);
                             cargarAlumnos();
+                          } else {
+                            alert(data.error || 'No se pudo asignar la rutina');
                           }
                         } catch (err) {
                           console.error('Error al asignar rutina:', err);
+                          alert('Error de conexión al asignar la rutina');
                         } finally {
                           setGuardandoRutina(false);
                         }

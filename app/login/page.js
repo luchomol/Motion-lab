@@ -36,11 +36,8 @@ export default function LoginPage() {
         const sessionRes = await fetch('/api/auth/session');
         const sessionData = await sessionRes.json();
 
-        if (sessionData?.user?.rol === 'ENTRENADOR') {
-          router.push('/admin');
-        } else {
-          router.push('/entrenamiento');
-        }
+        const destino = sessionData?.user?.rol === 'ENTRENADOR' ? '/admin' : '/entrenamiento';
+        window.location.href = destino;
       }
     } catch (err) {
       setError('Ocurrió un error inesperado al iniciar sesión.');
@@ -74,6 +71,38 @@ export default function LoginPage() {
             <p className={`mt-2 text-sm font-semibold ${isSunlight ? 'text-slate-700' : 'text-slate-300'}`}>
               Accede a tu cuenta de Motion Lab
             </p>
+
+            {/* ACCESOS RÁPIDOS DE PRUEBA */}
+            <div className="mt-4 flex flex-wrap gap-2 justify-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail('matiasMotionLab');
+                  setPassword('laboratorio123');
+                }}
+                className={`text-[11px] font-bold py-1.5 px-3 rounded-full border transition-all ${
+                  isSunlight
+                    ? 'bg-blue-50 text-blue-800 border-blue-300 hover:bg-blue-100'
+                    : 'bg-blue-500/10 text-sky-300 border-blue-500/30 hover:bg-blue-500/20'
+                }`}
+              >
+                ⚡ Entrenador Matías
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail('alumno@motionlab.com');
+                  setPassword('alumno123');
+                }}
+                className={`text-[11px] font-bold py-1.5 px-3 rounded-full border transition-all ${
+                  isSunlight
+                    ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
+                    : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/20'
+                }`}
+              >
+                ⚡ Alumno Demo
+              </button>
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
