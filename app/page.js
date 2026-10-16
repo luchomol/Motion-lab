@@ -1,0 +1,58 @@
+/**
+ * ========================================================================
+ * PÁGINA PRINCIPAL (app/page.js)
+ * ========================================================================
+ * Este archivo representa la ruta principal ("/") de la web de MOTION LAB.
+ * 
+ * Componentes visibles en la landing page:
+ * 1. Navbar: Barra de navegación con selector de modo soleado/noche
+ * 2. Hero: Portada de presentación de alto rendimiento con llamado a acción
+ * 3. AboutTrainer: Filosofía de entrenamiento, biomecánica y método
+ * 4. GallerySection: Ecosistema y áreas de entrenamiento (pista, sala, campo)
+ * 5. MentalHealthSection: Educación y recursos de salud mental para atletas
+ * 6. Footer: Pie de página y canales de contacto oficial
+ * 7. WhatsAppButton: Botón flotante para escritorio
+ * 8. MobileBottomBar: Barra inferior ergonómica para celulares
+ */
+
+import Navbar from '@/components/Navbar';
+import Hero from '@/components/Hero';
+import AboutTrainer from '@/components/AboutTrainer';
+import GallerySection from '@/components/GallerySection';
+import MentalHealthSection from '@/components/MentalHealthSection';
+import Footer from '@/components/Footer';
+import WhatsAppButton from '@/components/WhatsAppButton';
+import MobileBottomBar from '@/components/MobileBottomBar';
+
+export default function Home() {
+  return (
+    <div className="flex flex-col min-h-screen">
+      {/* 1. Barra de menú superior fija con toggle exterior */}
+      <Navbar />
+
+      {/* 2. Contenido principal de la landing page */}
+      <main className="flex-grow">
+        {/* Presentación de alto rendimiento */}
+        <Hero />
+
+        {/* Quién es el coach y cómo trabaja el laboratorio */}
+        <AboutTrainer />
+
+        {/* Áreas de entrenamiento y ecosistema visual */}
+        <GallerySection />
+
+        {/* Salud mental, manejo del estrés y recursos de ayuda */}
+        <MentalHealthSection />
+      </main>
+
+      {/* 3. Pie de página con información y redes */}
+      <Footer />
+
+      {/* 4. Botón flotante para escritorio */}
+      <WhatsAppButton />
+
+      {/* 5. Barra de acción ergonómica para celulares */}
+      <MobileBottomBar />
+    </div>
+  );
+}
