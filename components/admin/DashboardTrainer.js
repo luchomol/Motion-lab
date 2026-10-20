@@ -240,6 +240,19 @@ export default function DashboardTrainer() {
     cargarAlumnos();
   }, []);
 
+  // Bloquea el scroll de la página mientras la ficha está abierta para que
+  // no quede la barra del navegador visible por fuera del modal.
+  useEffect(() => {
+    if (!modalAbierto) return undefined;
+
+    const overflowPrevio = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = overflowPrevio;
+    };
+  }, [modalAbierto]);
+
   // Cambiar estado de pago (PENDIENTE <-> ACTIVO)
   const toggleEstadoPago = async (alumnoId, estadoActual) => {
     const nuevoEstado = estadoActual === 'PENDIENTE' ? 'ACTIVO' : 'PENDIENTE';
@@ -700,7 +713,7 @@ export default function DashboardTrainer() {
           MODAL: FICHA DEL ALUMNO Y ASIGNADOR DE RUTINA EN 3 BLOQUES
          ================================================================ */}
       {modalAbierto && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto animate-fadeIn">
+        <div className="fixed inset-0 z-50 !m-0 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto animate-fadeIn">
           <div className={`border rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto overflow-x-hidden p-6 sm:p-8 shadow-2xl relative transition-colors ${
             isSunlight ? 'bg-white border-slate-300' : 'bg-[#0b1220] border-slate-800'
           }`}>
