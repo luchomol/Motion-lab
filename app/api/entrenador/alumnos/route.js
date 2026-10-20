@@ -9,8 +9,9 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
-import { obtenerCheckinsDeStore, obtenerDetalleSesionesDeStore } from '@/lib/fallbackStore';
+import { obtenerCheckinsDeStore, obtenerDetalleSesionesDeStore, guardarAlumnoEnStore, obtenerAlumnoDeStore, obtenerAlumnosDeStore } from '@/lib/fallbackStore';
 import { ALUMNOS_DEMO } from '@/lib/demoAlumnos';
+import { actualizarAlumno } from '@/lib/actualizarAlumno';
 
 function calcularBienestar(checkins) {
   if (!checkins || checkins.length === 0) {
@@ -66,73 +67,101 @@ export async function GET() {
   try {
     let alumnos = [];
 
-    try {
-      alumnos = await prisma.usuario.findMany({
-        where: { rol: 'ALUMNO' },
-        include: {
-          perfilDeportivo: true,
-          rutinasComoAlumno: {
-            select: { 
-              id: true, 
-              nombre: true, 
-              fechaAsignada: true,
-              estado: true,
-              energiaInicial: true,
-              animoInicial: true,
-              descansoInicial: true,
-              animoFinal: true,
-              esfuerzoFinal: true,
-              desahogoFinal: true,
-              fechaCompletada: true,
+    if (process.env.DATABASE_URL) {
+      try {
+        alumnos = await prisma.usuario.findMany({
+          where: { rol: 'ALUMNO' },
+          include: {
+            perfilDeportivo: true,
+            rutinasComoAlumno: {
+              select: {
+                id: true,
+                nombre: true,
+                fechaAsignada: true,
+                estado: true,
+                energiaInicial: true,
+                animoInicial: true,
+                descansoInicial: true,
+                animoFinal: true,
+                esfuerzoFinal: true,
+                desahogoFinal: true,
+                fechaCompletada: true,
+              },
+              orderBy: { createdAt: 'desc' },
+              take: 10,
             },
-            orderBy: { createdAt: 'desc' },
-            take: 10,
           },
-        },
-        orderBy: { createdAt: 'desc' },
-      });
+          orderBy: { createdAt: 'desc' },
+        });
 
-      // Mapear checkins y calcular alertas para alumnos de base de datos
-      alumnos = alumnos.map((alumno) => {
-        const rutinas = alumno.rutinasComoAlumno || [];
-        const checkinsRutinas = rutinas
-          .filter((r) => r.energiaInicial || r.animoInicial || r.descansoInicial)
-          .map((r, i) => ({
-            clase: r.nombre || `Sesión ${i + 1}`,
-            fecha: r.fechaCompletada ? new Date(r.fechaCompletada).toISOString().split('T')[0] : 'Reciente',
-            energiaInicial: r.energiaInicial,
-            animoInicial: r.animoInicial,
-            descansoInicial: r.descansoInicial,
-            esfuerzoFinal: r.esfuerzoFinal,
-            animoFinal: r.animoFinal,
-            desahogoFinal: r.desahogoFinal,
-          }));
+        // Mapear checkins y calcular alertas para alumnos de base de datos
+        alumnos = alumnos.map((alumno) => {
+          const rutinas = alumno.rutinasComoAlumno || [];
+          const checkinsRutinas = rutinas
+            .filter((r) => r.energiaInicial || r.animoInicial || r.descansoInicial)
+            .map((r, i) => ({
+              clase: r.nombre || `Sesión ${i + 1}`,
+              fecha: r.fechaCompletada ? new Date(r.fechaCompletada).toISOString().split('T')[0] : 'Reciente',
+              energiaInicial: r.energiaInicial,
+              animoInicial: r.animoInicial,
+              descansoInicial: r.descansoInicial,
+              esfuerzoFinal: r.esfuerzoFinal,
+              animoFinal: r.animoFinal,
+              desahogoFinal: r.desahogoFinal,
+            }));
 
-        const checkinsStore = obtenerCheckinsDeStore(alumno.id);
-        const checkinsCompletos = [...checkinsStore, ...checkinsRutinas];
-        const { alertaBienestar, consecutivosFatiga } = calcularBienestar(checkinsCompletos);
+          const checkinsStore = obtenerCheckinsDeStore(alumno.id);
+          const checkinsCompletos = [...checkinsStore, ...checkinsRutinas];
+          const { alertaBienestar, consecutivosFatiga } = calcularBienestar(checkinsCompletos);
 
-        // Sesiones/días que el alumno ya completó en MySQL (persistidas)
-        const rutinasCompletadasIds = rutinas
-          .filter((r) => r.fechaCompletada)
-          .map((r) => r.id);
+          // Sesiones/días que el alumno ya completó en MySQL (persistidas)
+          const rutinasCompletadasIds = rutinas
+            .filter((r) => r.fechaCompletada)
+            .map((r) => r.id);
 
-        return {
-          ...alumno,
-          alertaBienestar,
-          consecutivosFatiga,
-          checkins: checkinsCompletos,
-          rutinasCompletadasIds,
-        };
-      });
-    } catch (dbErr) {
-      console.warn('⚠️ No se pudo consultar alumnos en MySQL (modo demo):', dbErr.message);
+          return {
+            ...alumno,
+            alertaBienestar,
+            consecutivosFatiga,
+            checkins: checkinsCompletos,
+            rutinasCompletadasIds,
+          };
+        });
+      } catch (dbErr) {
+        console.warn('⚠️ No se pudo consultar alumnos en MySQL (modo demo):', dbErr.message);
+      }
     }
 
     // Datos de demostración si la base de datos está vacía o sin inicializar
     if (!alumnos || alumnos.length === 0) {
       alumnos = ALUMNOS_DEMO;
     }
+
+    // Aplicar los cambios guardados en memoria (modo demo) y sumar los
+    // alumnos creados cuando MySQL no está disponible.
+    const alumnosEnStore = obtenerAlumnosDeStore();
+    const idsExistentes = new Set(alumnos.map((alumno) => alumno.id));
+    const alumnosNuevosDelStore = alumnosEnStore.filter(
+      (alumno) => alumno.creadoEnDemo && !idsExistentes.has(alumno.id)
+    );
+
+    if (alumnosNuevosDelStore.length > 0) {
+      alumnos = [...alumnosNuevosDelStore, ...alumnos];
+    }
+
+    alumnos = alumnos.map((alumno) => {
+      const cambios = obtenerAlumnoDeStore(alumno.id);
+      if (!cambios) return alumno;
+
+      return {
+        ...alumno,
+        ...cambios,
+        perfilDeportivo: {
+          ...(alumno.perfilDeportivo || {}),
+          ...(cambios.perfilDeportivo || {}),
+        },
+      };
+    });
 
     // Sincronizar check-ins y sesiones completadas desde el almacén en memoria (fallbackStore)
     alumnos = alumnos.map((alumno) => {
@@ -179,6 +208,103 @@ export async function GET() {
   }
 }
 
+export async function PUT(req) {
+  try {
+    let data;
+    try {
+      data = await req.json();
+    } catch {
+      return NextResponse.json(
+        { success: false, error: 'Los datos enviados no son válidos' },
+        { status: 400 }
+      );
+    }
+
+    const resultado = await actualizarAlumno(data.id, data);
+
+    if (!resultado.success) {
+      return NextResponse.json(resultado, { status: 400 });
+    }
+
+    return NextResponse.json(resultado);
+  } catch (error) {
+    console.error('Error al actualizar alumno:', error);
+    return NextResponse.json(
+      { success: false, error: 'Error al actualizar el alumno' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(req) {
+  try {
+    const body = await req.json();
+    const alumnoId = body.alumnoId || body.id;
+    const nuevoEstado = body.estadoPago;
+
+    if (!alumnoId || !['PENDIENTE', 'ACTIVO'].includes(nuevoEstado)) {
+      return NextResponse.json(
+        { success: false, error: 'Estado de pago no válido' },
+        { status: 400 }
+      );
+    }
+
+    let alumnoActualizado = null;
+
+    if (process.env.DATABASE_URL) {
+      try {
+        alumnoActualizado = await prisma.usuario.update({
+          where: { id: alumnoId },
+          data: { estadoPago: nuevoEstado },
+          select: {
+            id: true,
+            nombre: true,
+            apellido: true,
+            email: true,
+            estadoPago: true,
+            tipoPlan: true,
+          },
+        });
+      } catch (dbErr) {
+        console.warn('⚠️ No se pudo actualizar el pago en MySQL (modo demo):', dbErr.message);
+      }
+    }
+
+    // Respaldo en memoria para que el cambio se mantenga en modo demo
+    const base = ALUMNOS_DEMO.find((alumno) => alumno.id === alumnoId) || {};
+    const anterior = obtenerAlumnoDeStore(alumnoId) || {};
+
+    if (!alumnoActualizado) {
+      alumnoActualizado = {
+        ...base,
+        ...anterior,
+        id: alumnoId,
+        estadoPago: nuevoEstado,
+      };
+    }
+
+    guardarAlumnoEnStore(alumnoId, {
+      estadoPago: nuevoEstado,
+      nombre: alumnoActualizado.nombre,
+      apellido: alumnoActualizado.apellido,
+      email: alumnoActualizado.email,
+      tipoPlan: alumnoActualizado.tipoPlan,
+    });
+
+    return NextResponse.json({
+      success: true,
+      mensaje: `El estado de pago del alumno ha sido actualizado a ${nuevoEstado}`,
+      alumno: alumnoActualizado,
+    });
+  } catch (error) {
+    console.error('❌ Error al actualizar estado de pago:', error);
+    return NextResponse.json(
+      { success: false, error: 'Error al cambiar el estado de pago del alumno' },
+      { status: 500 }
+    );
+  }
+}
+
 export async function POST(req) {
   try {
     const data = await req.json();
@@ -189,46 +315,86 @@ export async function POST(req) {
 
     // Generar email único si no se provee
     const finalEmail = email || `alumno-${Date.now()}@motionlab.local`;
-    
-    let passwordHash = null;
-    if (password && password.trim() !== '') {
-      passwordHash = await bcrypt.hash(password, 10);
+
+    const perfil = {
+      objetivo: objetivo || 'Rendimiento',
+      deporte: deporte || 'Fitness General',
+      club: club === 'true' || club === true,
+      nivel: nivel || 'Principiante',
+      focos: focos || 'General',
+      disponibilidad: disponibilidad || '3 días',
+      rmEstimado: rmEstimado || '',
+      puntosDebiles: puntosDebiles || '',
+    };
+
+    const pesoNumerico = peso ? Number.parseFloat(String(peso).replace(',', '.')) : null;
+    const alturaNumerica = altura ? Number.parseFloat(String(altura).replace(',', '.')) : null;
+
+    // 1. Intentar guardar en MySQL cuando la base de datos está configurada
+    if (process.env.DATABASE_URL) {
+      try {
+        let passwordHash = null;
+        if (password && password.trim() !== '') {
+          passwordHash = await bcrypt.hash(password, 10);
+        }
+
+        const nuevoAlumno = await prisma.usuario.create({
+          data: {
+            nombre: nombre || 'Sin Nombre',
+            apellido: apellido || '',
+            email: finalEmail.toLowerCase().trim(),
+            passwordHash,
+            whatsapp,
+            peso: Number.isFinite(pesoNumerico) ? pesoNumerico : null,
+            altura: Number.isFinite(alturaNumerica) ? alturaNumerica : null,
+            lesiones,
+            estadoPago: estadoPago || 'PENDIENTE',
+            tipoPlan: tipoPlan || 'BASE',
+            rol: 'ALUMNO',
+            perfilDeportivo: {
+              create: perfil,
+            }
+          },
+          include: {
+            perfilDeportivo: true,
+            rutinasComoAlumno: {
+              where: { estado: 'ACTIVA' },
+              select: { id: true, nombre: true, fechaAsignada: true },
+            },
+          }
+        });
+
+        return NextResponse.json({ success: true, alumno: nuevoAlumno });
+      } catch (error) {
+        console.warn('⚠️ No se pudo crear el alumno en MySQL (se usará modo demo):', error.message);
+      }
     }
 
-    const nuevoAlumno = await prisma.usuario.create({
-      data: {
-        nombre: nombre || 'Sin Nombre',
-        apellido: apellido || '',
-        email: finalEmail.toLowerCase().trim(),
-        passwordHash,
-        whatsapp,
-        peso: peso ? parseFloat(peso) : null,
-        altura: altura ? parseFloat(altura) : null,
-        lesiones,
-        estadoPago: estadoPago || 'PENDIENTE',
-        tipoPlan: tipoPlan || 'BASE',
-        rol: 'ALUMNO',
-        perfilDeportivo: {
-          create: {
-            objetivo: objetivo || 'Rendimiento',
-            deporte: deporte || 'Fitness General',
-            club: club === 'true' || club === true,
-            nivel: nivel || 'Principiante',
-            focos: focos || 'General',
-            disponibilidad: disponibilidad || '3 días',
-            rmEstimado,
-            puntosDebiles
-          }
-        }
-      },
-      include: {
-        perfilDeportivo: true,
-        rutinasComoAlumno: {
-          where: { estado: 'ACTIVA' },
-          select: { id: true, nombre: true, fechaAsignada: true },
-        },
-      }
-    });
+    // 2. Respaldo en memoria para que el panel siga funcionando sin MySQL
+    const nuevoId = `demo-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const nuevoAlumno = {
+      id: nuevoId,
+      nombre: nombre || 'Sin Nombre',
+      apellido: apellido || '',
+      email: finalEmail.toLowerCase().trim(),
+      whatsapp: whatsapp || '',
+      peso: Number.isFinite(pesoNumerico) ? pesoNumerico : null,
+      altura: Number.isFinite(alturaNumerica) ? alturaNumerica : null,
+      lesiones: lesiones || '',
+      estadoPago: estadoPago || 'PENDIENTE',
+      tipoPlan: tipoPlan || 'BASE',
+      createdAt: new Date().toISOString(),
+      perfilDeportivo: perfil,
+      checkins: [],
+      alertaBienestar: 'VERDE',
+      consecutivosFatiga: 0,
+      sesionesBaseline: 0,
+      sesionesCompletadas: 0,
+      rutinasComoAlumno: [],
+      creadoEnDemo: true,
+    };
+
+    guardarAlumnoEnStore(nuevoId, nuevoAlumno);
 
     return NextResponse.json({ success: true, alumno: nuevoAlumno });
   } catch (error) {

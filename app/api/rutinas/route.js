@@ -24,32 +24,34 @@ export async function GET(request) {
     let rutinasActivas = [];
 
     // 1. Intentar consultar rutinas en MySQL mediante Prisma
-    try {
-      rutinasActivas = await prisma.rutina.findMany({
-        where: {
-          alumnoId: alumnoId,
-          estado: 'ACTIVA',
-        },
-        orderBy: {
-          createdAt: 'asc', // Ordenar por creación para tener Día 1, Día 2...
-        },
-        include: {
-          bloques: {
-            orderBy: { orden: 'asc' },
-            include: {
-              ejercicios: {
-                include: {
-                  series: {
-                    orderBy: { numeroSerie: 'asc' },
+    if (process.env.DATABASE_URL) {
+      try {
+        rutinasActivas = await prisma.rutina.findMany({
+          where: {
+            alumnoId: alumnoId,
+            estado: 'ACTIVA',
+          },
+          orderBy: {
+            createdAt: 'asc', // Ordenar por creación para tener Día 1, Día 2...
+          },
+          include: {
+            bloques: {
+              orderBy: { orden: 'asc' },
+              include: {
+                ejercicios: {
+                  include: {
+                    series: {
+                      orderBy: { numeroSerie: 'asc' },
+                    },
                   },
                 },
               },
             },
           },
-        },
-      });
-    } catch (dbErr) {
-      console.warn('⚠️ No se pudo consultar rutinas en MySQL (usando fallbackStore):', dbErr.message);
+        });
+      } catch (dbErr) {
+        console.warn('⚠️ No se pudo consultar rutinas en MySQL (usando fallbackStore):', dbErr.message);
+      }
     }
 
     // 2. Si MySQL no arrojó rutinas o no está conectado, consultar el almacén en memoria
@@ -134,84 +136,86 @@ export async function POST(request) {
     const planFormateado = guardarRutinasEnStore(alumnoId, dias);
 
     // 2. Intentar sincronizar y persistir en MySQL si la conexión está disponible
-    try {
-      // Asegurar que el entrenador exista en la tabla usuarios para no violar la Foreign Key
-      await prisma.usuario.upsert({
-        where: { id: 'matias-coach-id' },
-        update: {},
-        create: {
-          id: 'matias-coach-id',
-          nombre: 'Matías',
-          apellido: 'Entrenador',
-          email: 'matias@motionlab.fit',
-          rol: 'ENTRENADOR',
-          estadoPago: 'ACTIVO',
-          tipoPlan: 'PREMIUM',
-        },
-      });
-
-      // Asegurar que el alumno exista en la tabla usuarios
-      const alumnoExiste = await prisma.usuario.findUnique({
-        where: { id: alumnoId },
-      });
-
-      if (!alumnoExiste) {
-        await prisma.usuario.create({
-          data: {
-            id: alumnoId,
-            nombre: 'Alumno',
-            email: `${alumnoId}@motionlab.local`,
-            rol: 'ALUMNO',
+    if (process.env.DATABASE_URL) {
+      try {
+        // Asegurar que el entrenador exista en la tabla usuarios para no violar la Foreign Key
+        await prisma.usuario.upsert({
+          where: { id: 'matias-coach-id' },
+          update: {},
+          create: {
+            id: 'matias-coach-id',
+            nombre: 'Matías',
+            apellido: 'Entrenador',
+            email: 'matias@motionlab.fit',
+            rol: 'ENTRENADOR',
             estadoPago: 'ACTIVO',
             tipoPlan: 'PREMIUM',
           },
         });
-      }
 
-      // Marcar rutinas anteriores como completadas
-      await prisma.rutina.updateMany({
-        where: { alumnoId: alumnoId, estado: 'ACTIVA' },
-        data: { estado: 'COMPLETADA' },
-      });
-
-      // Insertar secuencialmente los nuevos días
-      for (const dia of dias) {
-        await prisma.rutina.create({
-          data: {
-            alumnoId,
-            entrenadorId: 'matias-coach-id',
-            nombre: dia.nombre,
-            descripcion: dia.descripcion || '',
-            bloques: {
-              create: (dia.bloques || []).map((bloque, indexBloque) => ({
-                tipo: bloque.tipo,
-                orden: indexBloque + 1,
-                ejercicios: {
-                  create: (bloque.ejercicios || []).map((ej) => ({
-                    nombre: ej.nombre || 'Ejercicio sin nombre',
-                    indicacionProfe: ej.indicacionProfe || '',
-                    videoUrl: ej.videoUrl || null,
-                    videoRecomendacion: ej.videoRecomendacion || null,
-                    rirObjetivo: ej.rirObjetivo ? parseInt(ej.rirObjetivo, 10) : null,
-                    series: {
-                      create: (ej.series || []).map((s, idxSerie) => ({
-                        numeroSerie: idxSerie + 1,
-                        repsRealizadas: s.repsRealizadas ? parseInt(s.repsRealizadas, 10) : null,
-                        cargaKg: s.cargaKg ? parseFloat(s.cargaKg) : null,
-                        rir: s.rir ? parseInt(s.rir, 10) : null,
-                        rpe: s.rpe ? parseFloat(s.rpe) : null,
-                        completado: false,
-                      })),
-                    },
-                  })),
-                },
-              })),
-            },
-          },
+        // Asegurar que el alumno exista en la tabla usuarios
+        const alumnoExiste = await prisma.usuario.findUnique({
+          where: { id: alumnoId },
         });
+
+        if (!alumnoExiste) {
+          await prisma.usuario.create({
+            data: {
+              id: alumnoId,
+              nombre: 'Alumno',
+              email: `${alumnoId}@motionlab.local`,
+              rol: 'ALUMNO',
+              estadoPago: 'ACTIVO',
+              tipoPlan: 'PREMIUM',
+            },
+          });
+        }
+
+        // Marcar rutinas anteriores como completadas
+        await prisma.rutina.updateMany({
+          where: { alumnoId: alumnoId, estado: 'ACTIVA' },
+          data: { estado: 'COMPLETADA' },
+        });
+
+        // Insertar secuencialmente los nuevos días
+        for (const dia of dias) {
+          await prisma.rutina.create({
+            data: {
+              alumnoId,
+              entrenadorId: 'matias-coach-id',
+              nombre: dia.nombre,
+              descripcion: dia.descripcion || '',
+              bloques: {
+                create: (dia.bloques || []).map((bloque, indexBloque) => ({
+                  tipo: bloque.tipo,
+                  orden: indexBloque + 1,
+                  ejercicios: {
+                    create: (bloque.ejercicios || []).map((ej) => ({
+                      nombre: ej.nombre || 'Ejercicio sin nombre',
+                      indicacionProfe: ej.indicacionProfe || '',
+                      videoUrl: ej.videoUrl || null,
+                      videoRecomendacion: ej.videoRecomendacion || null,
+                      rirObjetivo: ej.rirObjetivo ? parseInt(ej.rirObjetivo, 10) : null,
+                      series: {
+                        create: (ej.series || []).map((s, idxSerie) => ({
+                          numeroSerie: idxSerie + 1,
+                          repsRealizadas: s.repsRealizadas ? parseInt(s.repsRealizadas, 10) : null,
+                          cargaKg: s.cargaKg ? parseFloat(s.cargaKg) : null,
+                          rir: s.rir ? parseInt(s.rir, 10) : null,
+                          rpe: s.rpe ? parseFloat(s.rpe) : null,
+                          completado: false,
+                        })),
+                      },
+                    })),
+                  },
+                })),
+              },
+            },
+          });
+        }
+      } catch (dbErr) {
+        console.warn('⚠️ No se pudo persistir en MySQL (se usará almacén en memoria):', dbErr.message);
       }
-    } catch (dbErr) {
-      console.warn('⚠️ No se pudo persistir en MySQL (se usará almacén en memoria):', dbErr.message);
     }
 
     return NextResponse.json({

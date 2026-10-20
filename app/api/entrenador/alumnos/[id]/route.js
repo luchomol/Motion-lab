@@ -1,77 +1,30 @@
 import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
-import bcrypt from 'bcryptjs';
+import { actualizarAlumno } from '@/lib/actualizarAlumno';
 
 export async function PUT(req, { params }) {
   try {
-    const alumnoId = params.id;
-    const data = await req.json();
-
-    const {
-      nombre, apellido, email, password, whatsapp, peso, altura, lesiones, estadoPago, tipoPlan,
-      objetivo, deporte, club, nivel, focos, disponibilidad, rmEstimado, puntosDebiles
-    } = data;
-    
-    // Preparar campos para actualizar el usuario base
-    const updateData = {
-      nombre,
-      apellido,
-      email,
-      whatsapp,
-    };
-    
-    // Si se proporciona una contraseña, actualizarla
-    if (password && password.trim() !== '') {
-      updateData.passwordHash = await bcrypt.hash(password, 10);
+    let data;
+    try {
+      data = await req.json();
+    } catch {
+      return NextResponse.json(
+        { success: false, error: 'Los datos enviados no son válidos' },
+        { status: 400 }
+      );
     }
 
-    // Actualizar usuario
-    const alumnoActualizado = await prisma.usuario.update({
-      where: { id: alumnoId },
-      data: {
-        ...updateData,
-        peso: peso ? parseFloat(peso) : null,
-        altura: altura ? parseFloat(altura) : null,
-        lesiones,
-        estadoPago,
-        tipoPlan,
-        perfilDeportivo: {
-          upsert: {
-            create: {
-              objetivo: objetivo || 'Rendimiento',
-              deporte: deporte || 'Fitness General',
-              club: club || false,
-              nivel: nivel || 'Principiante',
-              focos: focos || 'General',
-              disponibilidad: disponibilidad || '3 días',
-              rmEstimado,
-              puntosDebiles
-            },
-            update: {
-              objetivo,
-              deporte,
-              club,
-              nivel,
-              focos,
-              disponibilidad,
-              rmEstimado,
-              puntosDebiles
-            }
-          }
-        }
-      },
-      include: {
-        perfilDeportivo: true,
-        rutinasComoAlumno: {
-          where: { estado: 'ACTIVA' },
-          select: { id: true, nombre: true, fechaAsignada: true },
-        },
-      }
-    });
+    const resultado = await actualizarAlumno(params.id, data);
 
-    return NextResponse.json({ success: true, alumno: alumnoActualizado });
+    if (!resultado.success) {
+      return NextResponse.json(resultado, { status: 400 });
+    }
+
+    return NextResponse.json(resultado);
   } catch (error) {
     console.error('Error al actualizar alumno:', error);
-    return NextResponse.json({ success: false, error: 'Error al actualizar el alumno' }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: 'Error al actualizar el alumno' },
+      { status: 500 }
+    );
   }
 }

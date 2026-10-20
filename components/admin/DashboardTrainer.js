@@ -253,10 +253,10 @@ export default function DashboardTrainer() {
   const toggleEstadoPago = async (alumnoId, estadoActual) => {
     const nuevoEstado = estadoActual === 'PENDIENTE' ? 'ACTIVO' : 'PENDIENTE';
     try {
-      const res = await fetch(`/api/entrenador/alumnos/${alumnoId}/estado-pago`, {
-        method: 'POST',
+      const res = await fetch('/api/entrenador/alumnos', {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ estadoPago: nuevoEstado }),
+        body: JSON.stringify({ alumnoId, estadoPago: nuevoEstado }),
       });
       const data = await res.json();
 
@@ -274,13 +274,16 @@ export default function DashboardTrainer() {
   const guardarPerfilAlumno = async () => {
     setGuardandoRutina(true);
     try {
-      const url = esNuevoUsuario ? '/api/entrenador/alumnos' : `/api/entrenador/alumnos/${alumnoSeleccionado.id}`;
+      const url = '/api/entrenador/alumnos';
       const method = esNuevoUsuario ? 'POST' : 'PUT';
+      const payload = esNuevoUsuario
+        ? formData
+        : { ...formData, id: alumnoSeleccionado.id };
 
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
