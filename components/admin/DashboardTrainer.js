@@ -701,7 +701,7 @@ export default function DashboardTrainer() {
          ================================================================ */}
       {modalAbierto && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto animate-fadeIn">
-          <div className={`border rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 shadow-2xl relative transition-colors ${
+          <div className={`border rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto overflow-x-hidden p-6 sm:p-8 shadow-2xl relative transition-colors ${
             isSunlight ? 'bg-white border-slate-300' : 'bg-[#0b1220] border-slate-800'
           }`}>
             
@@ -716,7 +716,7 @@ export default function DashboardTrainer() {
             </button>
 
             {/* CABECERA MODAL */}
-            <div className={`mb-6 pb-4 border-b flex justify-between items-start ${isSunlight ? 'border-slate-300' : 'border-slate-800'}`}>
+            <div className={`mb-6 pb-4 border-b flex flex-col gap-3 pr-10 sm:flex-row sm:justify-between sm:items-start ${isSunlight ? 'border-slate-300' : 'border-slate-800'}`}>
               <div>
                 <span className={`text-xs font-bold uppercase tracking-wider ${isSunlight ? 'text-sky-700' : 'text-sky-400'}`}>
                   {esNuevoUsuario ? 'Nuevo Alumno' : 'Ficha Técnica del Alumno'}
@@ -941,25 +941,25 @@ export default function DashboardTrainer() {
                 <div className={`mb-6 p-5 rounded-2xl border shadow-lg transition-colors ${
                   isSunlight ? 'bg-sky-50/60 border-sky-300' : 'bg-[#070d19] border-sky-500/30'
                 }`}>
-                  <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b ${isSunlight ? 'border-slate-300' : 'border-slate-800'}`}>
-                    <div className="flex items-center gap-2">
-                      <Activity className={`w-5 h-5 ${isSunlight ? 'text-sky-700' : 'text-sky-400'}`} />
-                      <h3 className={`text-sm font-black uppercase tracking-wider ${isSunlight ? 'text-slate-900' : 'text-white'}`}>
+                  <div className={`flex flex-col gap-3 pb-3 border-b ${isSunlight ? 'border-slate-300' : 'border-slate-800'}`}>
+                    <div className="flex items-start gap-2">
+                      <Activity className={`w-5 h-5 mt-0.5 shrink-0 ${isSunlight ? 'text-sky-700' : 'text-sky-400'}`} />
+                      <h3 className={`text-sm font-black uppercase tracking-wider leading-snug ${isSunlight ? 'text-slate-900' : 'text-white'}`}>
                         Monitoreo Psico-Físico y Alertas (UX Check-in)
                       </h3>
                     </div>
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       {alumnoSeleccionado?.alertaBienestar === 'ROJA' ? (
-                        <span className={`px-3 py-1 rounded-full border text-xs font-black flex items-center gap-1.5 w-max ${
+                        <span className={`max-w-full px-3 py-1 rounded-full border text-xs font-black flex items-center gap-1.5 ${
                           isSunlight
                             ? 'bg-red-50 text-red-700 border-red-300'
                             : 'bg-red-500/20 text-red-400 border-red-500/40'
                         }`}>
-                          <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
-                          🚨 Alerta Roja: 3 clases consecutivas agotado/estresado
+                          <span className="w-2 h-2 shrink-0 rounded-full bg-red-500 animate-ping" />
+                          <span>🚨 Alerta Roja: 3 clases consecutivas agotado/estresado</span>
                         </span>
                       ) : alumnoSeleccionado?.alertaBienestar === 'AMARILLA' ? (
-                        <span className={`px-3 py-1 rounded-full border text-xs font-bold w-max ${
+                        <span className={`max-w-full px-3 py-1 rounded-full border text-xs font-bold ${
                           isSunlight
                             ? 'bg-amber-50 text-amber-800 border-amber-300'
                             : 'bg-amber-500/20 text-amber-400 border-amber-500/40'
@@ -967,7 +967,7 @@ export default function DashboardTrainer() {
                           ⚠️ Alerta Amarilla: Fatiga o estrés reciente
                         </span>
                       ) : (
-                        <span className={`px-3 py-1 rounded-full border text-xs font-bold w-max ${
+                        <span className={`max-w-full px-3 py-1 rounded-full border text-xs font-bold ${
                           isSunlight
                             ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
                             : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
@@ -977,12 +977,12 @@ export default function DashboardTrainer() {
                       )}
 
                       {/* CONTADOR DE SESIONES COMPLETADAS DEL ALUMNO */}
-                      <span className={`px-3 py-1 rounded-full border text-xs font-bold w-max flex items-center gap-1.5 ${
+                      <span className={`max-w-full px-3 py-1 rounded-full border text-xs font-bold flex items-center gap-1.5 ${
                         isSunlight
                           ? 'bg-blue-50 text-blue-800 border-blue-300'
                           : 'bg-blue-500/10 text-sky-300 border-blue-500/30'
                       }`}>
-                        <Dumbbell className="w-3.5 h-3.5" />
+                        <Dumbbell className="w-3.5 h-3.5 shrink-0" />
                         {alumnoSeleccionado?.sesionesCompletadas || 0}{' '}
                         {(alumnoSeleccionado?.sesionesCompletadas || 0) === 1 ? 'sesión completada' : 'sesiones completadas'}
                       </span>
