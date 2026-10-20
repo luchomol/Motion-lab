@@ -1,13 +1,13 @@
 // ========================================================================
 // ESQUEMA DE BASE DE DATOS PRISMA - MOTION LAB (prisma/schema.prisma)
 // ========================================================================
-// Prisma ORM conecta la aplicación Next.js con MySQL alojado en Railway
-// o entorno local. Modela los usuarios, autenticación NextAuth, perfiles
+// Prisma ORM conecta la aplicación Next.js con PostgreSQL alojado en Vercel
+// (Prisma Postgres) o un entorno local compatible. Modela los usuarios, autenticación NextAuth, perfiles
 // deportivos, rutinas en 3 bloques (Movilidad, Activación, Desarrollo),
 // ejercicios y series interactivas.
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 

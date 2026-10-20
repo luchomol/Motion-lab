@@ -111,24 +111,40 @@ export async function GET() {
             }));
 
           const checkinsStore = obtenerCheckinsDeStore(alumno.id);
-          const checkinsCompletos = [...checkinsStore, ...checkinsRutinas];
-          const { alertaBienestar, consecutivosFatiga } = calcularBienestar(checkinsCompletos);
+          // Historial que ya existía en la versión anterior de Motion Lab.
+          // Se conserva como línea base hasta que la base sume nuevos check-ins.
+          const historialPrevio = ALUMNOS_DEMO.find((demo) => demo.id === alumno.id);
+          const checkinsActuales = [...checkinsStore, ...checkinsRutinas];
+          const checkinsCompletos = [
+            ...checkinsActuales,
+            ...(historialPrevio?.checkins || []),
+          ];
 
-          // Sesiones/días que el alumno ya completó en MySQL (persistidas)
+          // Si todavía no hay check-ins nuevos, respetamos la alerta histórica
+          // guardada en la versión anterior. Con datos nuevos se recalcula.
+          const bienestar = checkinsActuales.length > 0
+            ? calcularBienestar(checkinsCompletos)
+            : {
+                alertaBienestar: historialPrevio?.alertaBienestar || 'VERDE',
+                consecutivosFatiga: Number(historialPrevio?.consecutivosFatiga || 0),
+              };
+
+          // Sesiones/días que el alumno ya completó en PostgreSQL (persistidas)
           const rutinasCompletadasIds = rutinas
             .filter((r) => r.fechaCompletada)
             .map((r) => r.id);
 
           return {
             ...alumno,
-            alertaBienestar,
-            consecutivosFatiga,
+            alertaBienestar: bienestar.alertaBienestar,
+            consecutivosFatiga: bienestar.consecutivosFatiga,
+            sesionesBaseline: Number(historialPrevio?.sesionesBaseline || 0),
             checkins: checkinsCompletos,
             rutinasCompletadasIds,
           };
         });
       } catch (dbErr) {
-        console.warn('⚠️ No se pudo consultar alumnos en MySQL (modo demo):', dbErr.message);
+        console.warn('⚠️ No se pudo consultar alumnos en PostgreSQL (modo demo):', dbErr.message);
       }
     }
 
@@ -138,7 +154,7 @@ export async function GET() {
     }
 
     // Aplicar los cambios guardados en memoria (modo demo) y sumar los
-    // alumnos creados cuando MySQL no está disponible.
+    // alumnos creados cuando PostgreSQL no está disponible.
     const alumnosEnStore = obtenerAlumnosDeStore();
     const idsExistentes = new Set(alumnos.map((alumno) => alumno.id));
     const alumnosNuevosDelStore = alumnosEnStore.filter(
@@ -168,7 +184,7 @@ export async function GET() {
       const checkinsStore = obtenerCheckinsDeStore(alumno.id);
       const sesionesStore = obtenerDetalleSesionesDeStore(alumno.id);
 
-      // Sesiones completadas = historial base (demo o MySQL) + sesiones registradas
+      // Sesiones completadas = historial base (demo o PostgreSQL) + sesiones registradas
       // en memoria al finalizar cada día, evitando duplicar la misma rutina/día.
       const completadasExtraDB = (alumno.rutinasCompletadasIds || []).filter(
         (id) => !sesionesStore.rutinas.includes(id)
@@ -266,7 +282,7 @@ export async function PATCH(req) {
           },
         });
       } catch (dbErr) {
-        console.warn('⚠️ No se pudo actualizar el pago en MySQL (modo demo):', dbErr.message);
+        console.warn('⚠️ No se pudo actualizar el pago en PostgreSQL (modo demo):', dbErr.message);
       }
     }
 
@@ -330,7 +346,7 @@ export async function POST(req) {
     const pesoNumerico = peso ? Number.parseFloat(String(peso).replace(',', '.')) : null;
     const alturaNumerica = altura ? Number.parseFloat(String(altura).replace(',', '.')) : null;
 
-    // 1. Intentar guardar en MySQL cuando la base de datos está configurada
+    // 1. Intentar guardar en PostgreSQL cuando la base de datos está configurada
     if (process.env.DATABASE_URL) {
       try {
         let passwordHash = null;
@@ -366,11 +382,11 @@ export async function POST(req) {
 
         return NextResponse.json({ success: true, alumno: nuevoAlumno });
       } catch (error) {
-        console.warn('⚠️ No se pudo crear el alumno en MySQL (se usará modo demo):', error.message);
+        console.warn('⚠️ No se pudo crear el alumno en PostgreSQL (se usará modo demo):', error.message);
       }
     }
 
-    // 2. Respaldo en memoria para que el panel siga funcionando sin MySQL
+    // 2. Respaldo en memoria para que el panel siga funcionando sin PostgreSQL
     const nuevoId = `demo-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const nuevoAlumno = {
       id: nuevoId,

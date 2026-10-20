@@ -7,7 +7,7 @@ El proyecto está construido con:
 - **React 18** (Biblioteca para crear interfaces interactivas mediante componentes)
 - **JavaScript estándar** (Sin TypeScript, con código limpio y comentarios línea por línea para facilitar el aprendizaje)
 - **Tailwind CSS** (Diseño moderno, modo oscuro atlético y totalmente responsive para teléfonos y PC)
-- **MySQL** (Base de datos relacional para registrar prospectos, alumnos y respuestas del cuestionario)
+- **PostgreSQL + Prisma** (Base de datos relacional para alumnos, rutinas, check-ins y seguimiento)
 - **Vercel** (Plataforma recomendada para publicar tu web en internet con un clic y de forma gratuita)
 
 ---
@@ -18,7 +18,7 @@ El proyecto está construido con:
 ├── app/
 │   ├── api/
 │   │   ├── cuestionario/
-│   │   │   └── route.js      -> Backend: Recibe los datos del cuestionario y los guarda en MySQL
+│   │   │   └── route.js      -> Backend: Recibe los datos del cuestionario y los guarda en PostgreSQL
 │   │   └── planes/
 │   │       └── route.js      -> Backend: Devuelve la lista y precios de los planes
 │   ├── globals.css           -> Estilos globales y temas deportivos de Tailwind
@@ -33,10 +33,12 @@ El proyecto está construido con:
 │   ├── TestimonialsAndFaq.js -> Casos de éxito y acordeón de preguntas frecuentes
 │   ├── Footer.js             -> Pie de página con redes sociales y aviso de salud
 │   └── WhatsAppButton.js     -> Botón flotante siempre visible para chatear
-├── database/
-│   └── schema.sql            -> Script SQL listo para crear las tablas en tu MySQL
+├── prisma/
+│   └── schema.prisma         -> Modelos de PostgreSQL (alumnos, rutinas, check-ins, etc.)
+├── scripts/
+│   └── seed-demo.mjs         -> Carga inicial de los alumnos del panel
 ├── lib/
-│   └── db.js                 -> Conexión reutilizable a MySQL (Connection Pool)
+│   └── prisma.js             -> Cliente Prisma reutilizable para toda la app
 ├── .env.example              -> Plantilla con las variables de configuración
 ├── .env.local                -> Tus contraseñas y configuración local (no se sube a internet)
 ├── package.json              -> Lista de herramientas instaladas en el proyecto
@@ -64,32 +66,33 @@ Abre tu navegador y entra a:
 
 ---
 
-## 🗄️ Cómo Configurar la Base de Datos MySQL
+## 🗄️ Cómo Configurar la Base de Datos PostgreSQL
 
-### Opción A: En tu computadora con XAMPP (Local)
-1. Abre **XAMPP** y activa el botón **Start** en el módulo **MySQL**.
-2. Entra en tu navegador a: `http://localhost/phpmyadmin`
-3. Haz clic en la pestaña superior llamada **SQL**.
-4. Abre el archivo `database/schema.sql` de este proyecto, copia todo su contenido y pégalo allí.
-5. Presiona el botón **Continuar** (o *Go*). ¡Listo! Se creará la base de datos `personal_trainer_db` con sus 3 tablas (`planes`, `alumnos`, `evaluaciones`).
-6. Verifica que en tu archivo `.env.local` tengas:
-   ```env
-   MYSQL_HOST=localhost
-   MYSQL_PORT=3306
-   MYSQL_USER=root
-   MYSQL_PASSWORD=
-   MYSQL_DATABASE=personal_trainer_db
+La aplicación usa **Prisma** con PostgreSQL. La forma recomendada en producción es conectar una base **Prisma Postgres** desde el panel de Vercel; también podés usar cualquier PostgreSQL local o en la nube.
+
+### Opción A: Prisma Postgres desde Vercel (producción)
+1. Entrá al proyecto `motion-lab-main` en Vercel.
+2. Abrí **Storage** y conectá el store de Prisma Postgres.
+3. Vercel agrega automáticamente `DATABASE_URL` (y `POSTGRES_URL` / `PRISMA_DATABASE_URL`).
+4. Desde una terminal con esa `DATABASE_URL`, creá las tablas y cargá los alumnos:
+   ```bash
+   npm run prisma:push
+   npm run db:seed
    ```
 
-### Opción B: En la Nube (Gratis y lista para Vercel)
-Si no quieres instalar nada en tu computadora, puedes crear una base de datos MySQL gratuita en la nube con servicios como:
-- [Aiven](https://aiven.io/) (MySQL gratis)
-- [Railway](https://railway.app/)
-- [TiDB Cloud](https://tidbcloud.com/) (MySQL Serverless)
+### Opción B: PostgreSQL local
+1. Creá una base de datos PostgreSQL vacía.
+2. Copiá `.env.example` a `.env.local` y completá:
+   ```env
+   DATABASE_URL="postgresql://postgres:password@localhost:5432/motion_lab"
+   ```
+3. Creá las tablas y cargá los alumnos:
+   ```bash
+   npm run prisma:push
+   npm run db:seed
+   ```
 
-Solo copias las credenciales que te den y las pegas en tu archivo `.env.local`.
-
-> **Nota:** La aplicación incluye un modo inteligente de tolerancia a fallos. Si aún no has conectado MySQL, la web funcionará igual y te permitirá probar el cuestionario sin romperse.
+> **Nota:** Si la base no está disponible, la app mantiene un modo demo en memoria para que el panel siga funcionando, pero los cambios no serán permanentes. Con `DATABASE_URL` configurada, las fichas, pagos y rutinas quedan guardados en PostgreSQL.
 
 ---
 
@@ -115,7 +118,7 @@ const [pasoActual, setPasoActual] = useState(1);
 Cuando el alumno presiona "Ver mi Diagnóstico":
 1. El archivo `FitnessQuiz.js` junta las respuestas y hace una petición con `fetch('/api/cuestionario', { method: 'POST', body: ... })`.
 2. El archivo `app/api/cuestionario/route.js` recibe la información en el servidor.
-3. El archivo `lib/db.js` ejecuta la sentencia SQL `INSERT INTO alumnos (...)` para guardar los datos en MySQL.
+3. La ruta del backend usa Prisma (`lib/prisma.js`) para guardar los datos en PostgreSQL.
 4. El servidor responde con `{ success: true }` y la pantalla le muestra el plan recomendado y el botón de WhatsApp.
 
 ---
@@ -137,5 +140,7 @@ Cuando el alumno presiona "Ver mi Diagnóstico":
 1. Sube este proyecto a tu cuenta de **GitHub**.
 2. Ve a [vercel.com](https://vercel.com) e inicia sesión con tu cuenta de GitHub.
 3. Haz clic en **"Add New Project"** y selecciona tu repositorio.
-4. En la sección **Environment Variables**, agrega las variables de tu archivo `.env.example` (tus datos de conexión a MySQL y teléfono).
-5. Haz clic en **Deploy**. ¡En menos de 2 minutos tu web estará activa con un enlace HTTPS público gratuito!
+4. En la sección **Storage**, conectá una base **Prisma Postgres**. Vercel configura `DATABASE_URL` automáticamente.
+5. Agregá también `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, `NEXT_PUBLIC_WHATSAPP_PHONE` y, si usás Google, las credenciales OAuth.
+6. Antes del primer uso, ejecutá una vez `npm run prisma:push` y `npm run db:seed` con la `DATABASE_URL` de producción.
+7. Hacé clic en **Deploy**. ¡En menos de 2 minutos tu web estará activa con un enlace HTTPS público gratuito!

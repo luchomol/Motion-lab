@@ -3,25 +3,13 @@
  * RUTA DE API: /api/planes (app/api/planes/route.js)
  * ========================================================================
  * Endpoint HTTP tipo GET para consultar la lista de planes disponibles.
- * Intenta leer desde MySQL si está disponible, o devuelve los planes
- * por defecto si aún no se ha inicializado la base de datos.
+ * Los planes comerciales son estáticos y no dependen de la base de datos.
  */
 
 import { NextResponse } from 'next/server';
-import { query } from '@/lib/db';
 
 export async function GET() {
   try {
-    try {
-      // Intentamos consultar la tabla 'planes' en MySQL
-      const planesDb = await query('SELECT * FROM planes ORDER BY id ASC');
-      if (planesDb && planesDb.length > 0) {
-        return NextResponse.json({ success: true, fuente: 'mysql', data: planesDb });
-      }
-    } catch (dbErr) {
-      console.warn('⚠️ Consultando planes con datos estáticos (MySQL no disponible):', dbErr.message);
-    }
-
     // Datos de respaldo en caso de que la base de datos aún no tenga tablas creadas
     const planesDefault = [
       {

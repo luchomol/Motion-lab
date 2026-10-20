@@ -9,7 +9,8 @@
     "start": "next start",
     "postinstall": "prisma generate",
     "prisma:generate": "prisma generate",
-    "prisma:push": "prisma db push"
+    "prisma:push": "prisma db push",
+    "db:seed": "node scripts/seed-demo.mjs"
   },
   "dependencies": {
     "@next-auth/prisma-adapter": "^1.0.7",

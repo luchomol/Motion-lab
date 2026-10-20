@@ -22,16 +22,23 @@ Esta aplicación Next.js 14 con Prisma ORM y Tailwind CSS está lista para despl
 
 | Variable | Valor de Ejemplo / Descripción |
 | :--- | :--- |
-| `DATABASE_URL` | `mysql://usuario:password@host:3306/motion_lab` *(Podés crear una MySQL gratis en Railway, Aiven o PlanetScale)* |
+| `DATABASE_URL` | `postgresql://usuario:password@host:5432/motion_lab` *(Recomendado: conectar un store de Prisma Postgres desde Storage en Vercel)* |
 | `NEXTAUTH_URL` | `https://tu-proyecto.vercel.app` *(Tu URL generada por Vercel)* |
 | `NEXTAUTH_SECRET` | Una clave secreta alfanumérica de 32+ caracteres |
 | `NEXT_PUBLIC_WHATSAPP_PHONE` | `5493624654911` *(WhatsApp del Coach Matías)* |
 | `GOOGLE_CLIENT_ID` | *(Opcional)* Tu Client ID de Google Cloud |
 | `GOOGLE_CLIENT_SECRET` | *(Opcional)* Tu Client Secret de Google Cloud |
 
-> 💡 **Nota:** La aplicación cuenta con modo demo/fallback integrado. Incluso si la base de datos MySQL aún no está enlazada, la web compila y permite probar todas las pantallas interactivas, los modales de Check-in (Pre y Post) y el panel de administración.
+> 💡 **Nota:** La aplicación cuenta con modo demo/fallback integrado. Incluso si la base de datos PostgreSQL aún no está enlazada, la web compila y permite probar todas las pantallas interactivas, los modales de Check-in (Pre y Post) y el panel de administración. Para que los cambios sean permanentes, conectá PostgreSQL.
 
-4. **Hacé clic en "Deploy":**
+4. **Creá las tablas y cargá los alumnos (una sola vez):**
+   - Desde una terminal con la `DATABASE_URL` de producción:
+   ```bash
+   npm run prisma:push
+   npm run db:seed
+   ```
+
+5. **Hacé clic en "Deploy":**
    - Vercel ejecutará automáticamente `prisma generate && next build`.
    - En unos segundos tendrás tu URL pública lista (ej. `https://motion-lab.vercel.app`).
 

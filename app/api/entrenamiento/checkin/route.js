@@ -7,7 +7,7 @@
  * - Post: impacto anímico, esfuerzo percibido (RPE 1 al 10), desahogo mental.
  * 
  * Persiste tanto en el almacén en memoria (fallbackStore) para reflejar las alertas
- * en el panel del profesor de inmediato, como en MySQL vía Prisma si está disponible.
+ * en el panel del profesor de inmediato, como en PostgreSQL vía Prisma si está disponible.
  */
 
 import { NextResponse } from 'next/server';
@@ -56,7 +56,7 @@ export async function POST(request) {
       desahogoFinal,
     });
 
-    // 2. Intentar persistir en MySQL (Prisma) si la base de datos está conectada
+    // 2. Intentar persistir en PostgreSQL (Prisma) si la base de datos está conectada
     try {
       if (rutinaId) {
         const updateData = {};
@@ -97,7 +97,7 @@ export async function POST(request) {
         });
       }
     } catch (dbErr) {
-      console.warn('⚠️ No se pudo persistir check-in en MySQL (usando fallbackStore):', dbErr.message);
+      console.warn('⚠️ No se pudo persistir check-in en PostgreSQL (usando fallbackStore):', dbErr.message);
     }
 
     return NextResponse.json({

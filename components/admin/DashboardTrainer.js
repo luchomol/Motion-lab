@@ -234,19 +234,10 @@ export default function DashboardTrainer() {
   };
 
   useEffect(() => {
+    // Carga inicial. El panel no se actualiza solo para evitar parpadeos
+    // y que la tabla se rerenderice mientras Matías está editando.
+    // La actualización queda disponible con el botón "Actualizar alumnos y alertas".
     cargarAlumnos();
-
-    // Actualizar automáticamente al volver a la pestaña de administración
-    const handleFocus = () => cargarAlumnos();
-    window.addEventListener('focus', handleFocus);
-
-    // Sondeo en tiempo real cada 10 segundos para detectar check-ins de fatiga
-    const interval = setInterval(cargarAlumnos, 10000);
-
-    return () => {
-      window.removeEventListener('focus', handleFocus);
-      clearInterval(interval);
-    };
   }, []);
 
   // Cambiar estado de pago (PENDIENTE <-> ACTIVO)

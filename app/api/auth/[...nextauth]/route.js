@@ -3,7 +3,7 @@
  * CONFIGURACIÓN DE NEXTAUTH (app/api/auth/[...nextauth]/route.js)
  * ========================================================================
  * Maneja la autenticación social (Google OAuth) y tradicional (Email / Password).
- * Utiliza PrismaAdapter para persistir usuarios, cuentas y sesiones en MySQL.
+ * Utiliza PrismaAdapter para persistir usuarios, cuentas y sesiones en PostgreSQL.
  * 
  * ¿CÓMO FUNCIONA LA SESIÓN CON CREDENTIALS Y JWT?
  * Cuando se usa el proveedor de credenciales (email y contraseña), NextAuth requiere
@@ -61,7 +61,7 @@ export const authOptions = {
         ].includes(inputUser);
 
         if (esUsuarioEntrenador && (inputPass === 'laboratorio123' || inputPass === 'admin123')) {
-          // Asegurar que el entrenador exista en la BD si MySQL está conectado
+          // Asegurar que el entrenador exista en la BD si PostgreSQL está conectado
           try {
             await prisma.usuario.upsert({
               where: { id: 'matias-coach-id' },
@@ -77,7 +77,7 @@ export const authOptions = {
               },
             });
           } catch (e) {
-            // Ignorar si MySQL está en modo offline/demo
+            // Ignorar si PostgreSQL está en modo offline/demo
           }
 
           return {
@@ -162,6 +162,10 @@ export const authOptions = {
             if (!passwordValida && inputPass !== '123456' && inputPass !== 'laboratorio123') {
               throw new Error('La contraseña ingresada es incorrecta');
             }
+          } else if (inputPass !== '123456' && inputPass !== 'laboratorio123') {
+            // Los usuarios creados sin contraseña solo pueden entrar con la
+            // clave temporal de demo, nunca con cualquier contraseña.
+            throw new Error('Este usuario todavía no tiene una contraseña configurada');
           }
 
           // Devolvemos el objeto usuario que pasará al token JWT

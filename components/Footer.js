@@ -107,7 +107,7 @@ export default function Footer() {
           isSunlight ? 'border-slate-300 text-slate-600' : 'border-slate-800/80 text-slate-400'
         }`}>
           <p>
-            © {anioActual} MOTION LAB. Todos los derechos reservados. Desarrollado con Next.js, React y MySQL.
+            © {anioActual} MOTION LAB. Todos los derechos reservados. Desarrollado con Next.js, React y PostgreSQL.
           </p>
           <p className="text-[11px] max-w-sm text-center sm:text-right font-medium">
             Aviso médico: Consulta con un profesional de la salud antes de iniciar planes de entrenamiento de alta exigencia.

@@ -3,7 +3,7 @@
  * ENDPOINT API: Rutinas en 3 Bloques y Plan Semanal (app/api/rutinas/route.js)
  * ========================================================================
  * Soporta persistencia híbrida:
- * 1. MySQL mediante Prisma cuando la base de datos está conectada.
+ * 1. PostgreSQL mediante Prisma cuando la base de datos está conectada.
  * 2. Almacén compartido en memoria (fallbackStore) para asegurar que el alumno
  *    vea sus rutinas de inmediato, incluso sin base de datos activa o en caso de fallo de red.
  */
@@ -23,7 +23,7 @@ export async function GET(request) {
 
     let rutinasActivas = [];
 
-    // 1. Intentar consultar rutinas en MySQL mediante Prisma
+    // 1. Intentar consultar rutinas en PostgreSQL mediante Prisma
     if (process.env.DATABASE_URL) {
       try {
         rutinasActivas = await prisma.rutina.findMany({
@@ -50,11 +50,11 @@ export async function GET(request) {
           },
         });
       } catch (dbErr) {
-        console.warn('⚠️ No se pudo consultar rutinas en MySQL (usando fallbackStore):', dbErr.message);
+        console.warn('⚠️ No se pudo consultar rutinas en PostgreSQL (usando fallbackStore):', dbErr.message);
       }
     }
 
-    // 2. Si MySQL no arrojó rutinas o no está conectado, consultar el almacén en memoria
+    // 2. Si PostgreSQL no arrojó rutinas o no está conectado, consultar el almacén en memoria
     if (!rutinasActivas || rutinasActivas.length === 0) {
       const rutinasStore = obtenerRutinasDeStore(alumnoId);
       if (rutinasStore && rutinasStore.length > 0) {
@@ -132,10 +132,10 @@ export async function POST(request) {
     }
 
     // 1. Guardar SIEMPRE de inmediato en fallbackStore
-    // Esto garantiza que el alumno verá su rutina sin importar el estado de MySQL
+    // Esto garantiza que el alumno verá su rutina sin importar el estado de PostgreSQL
     const planFormateado = guardarRutinasEnStore(alumnoId, dias);
 
-    // 2. Intentar sincronizar y persistir en MySQL si la conexión está disponible
+    // 2. Intentar sincronizar y persistir en PostgreSQL si la conexión está disponible
     if (process.env.DATABASE_URL) {
       try {
         // Asegurar que el entrenador exista en la tabla usuarios para no violar la Foreign Key
@@ -214,7 +214,7 @@ export async function POST(request) {
           });
         }
       } catch (dbErr) {
-        console.warn('⚠️ No se pudo persistir en MySQL (se usará almacén en memoria):', dbErr.message);
+        console.warn('⚠️ No se pudo persistir en PostgreSQL (se usará almacén en memoria):', dbErr.message);
       }
     }
 

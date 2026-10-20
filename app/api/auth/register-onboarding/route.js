@@ -69,7 +69,7 @@ export async function POST(request) {
         );
       }
 
-      // 2. Crear el Usuario en MySQL con estado de pago 'PENDIENTE'
+      // 2. Crear el Usuario en PostgreSQL con estado de pago 'PENDIENTE'
       usuarioGuardado = await prisma.usuario.create({
         data: {
           nombre: nombre.trim(),
@@ -104,7 +104,7 @@ export async function POST(request) {
       guardadoEnDb = true;
       console.log('✅ Alumno y perfil deportivo creados en Prisma:', usuarioGuardado.id);
     } catch (dbError) {
-      console.warn('⚠️ No se pudo guardar en MySQL vía Prisma (Modo Demo):', dbError.message);
+      console.warn('⚠️ No se pudo guardar en PostgreSQL vía Prisma (Modo Demo):', dbError.message);
       // Creamos un objeto simulado para continuar sin bloquear la experiencia
       usuarioGuardado = {
         id: 'demo-user-' + Date.now(),
@@ -137,7 +137,7 @@ export async function POST(request) {
       success: true,
       mensaje: guardadoEnDb
         ? '¡Cuenta y perfil deportivo creados exitosamente! Estado: Pendiente de pago.'
-        : '¡Registro simulado con éxito (modo demo sin MySQL activo)!',
+        : '¡Registro simulado con éxito (modo demo sin PostgreSQL activo)!',
       usuario: {
         id: usuarioGuardado.id,
         nombre: usuarioGuardado.nombre,
