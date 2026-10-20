@@ -9,7 +9,7 @@
  */
 
 import { useState } from 'react';
-import { Menu, X, Dumbbell, ShieldAlert, Sun, Moon } from 'lucide-react';
+import { Menu, X, Dumbbell, ShieldAlert, LogIn, Sun, Moon } from 'lucide-react';
 import Link from 'next/link';
 import MotionLabLogo from './MotionLabLogo';
 import { useTheme } from './ThemeProvider';
@@ -101,6 +101,15 @@ export default function Navbar() {
               )}
             </button>
 
+            <Link
+              href="/login"
+              className={`text-sm font-bold transition-colors flex items-center gap-1 px-2.5 py-1.5 ${
+                isSunlight ? 'text-slate-800 hover:text-blue-700' : 'text-slate-200 hover:text-white'
+              }`}
+            >
+              Iniciar Sesión
+            </Link>
+
           </div>
 
           {/* BOTÓN MÓVIL (TOGGLE RÁPIDO Y MENÚ HAMBURGUESA) */}
@@ -151,6 +160,16 @@ export default function Navbar() {
             ? 'bg-white border-slate-300 text-slate-900'
             : 'bg-[#0a0f1d] border-slate-800 text-slate-100'
         }`}>
+          <Link
+            href="/login"
+            onClick={() => setMenuAbierto(false)}
+            className={`block text-base font-bold py-2.5 flex items-center gap-2.5 touch-target ${
+              isSunlight ? 'text-blue-700' : 'text-sky-400'
+            }`}
+          >
+            <LogIn className="w-5 h-5" />
+            <span>Iniciar Sesión</span>
+          </Link>
           <Link
             href="/entrenamiento"
             onClick={() => setMenuAbierto(false)}
