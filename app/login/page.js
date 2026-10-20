@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { ArrowRight, LogIn } from 'lucide-react';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
-import MobileBottomBar from '@/components/MobileBottomBar';
 import { useTheme } from '@/components/ThemeProvider';
 
 export default function LoginPage() {
@@ -51,7 +50,7 @@ export default function LoginPage() {
     }`}>
       <Navbar />
 
-      <main className="flex-grow flex items-center justify-center p-4 pt-28 pb-20 relative z-10">
+      <main className="flex-grow flex items-center justify-center p-4 pt-28 pb-8 relative z-10">
         <div className={`w-full max-w-md p-6 sm:p-8 rounded-3xl border shadow-2xl relative transition-all ${
           isSunlight
             ? 'bg-white border-2 border-slate-300 shadow-slate-200'
@@ -172,8 +171,6 @@ export default function LoginPage() {
           </div>
         </div>
       </main>
-
-      <MobileBottomBar />
     </div>
   );
 }

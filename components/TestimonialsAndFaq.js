@@ -201,7 +201,7 @@ export default function TestimonialsAndFaq() {
         </div>
 
         {/* ================================================================
-            3. ECOSISTEMA MOTION LAB (FOTOGRAFÍAS OFICIALES)
+            3. RESULTADOS MOTION LAB (FOTOGRAFÍAS OFICIALES)
            ================================================================ */}
         <div>
           <div className="text-center max-w-3xl mx-auto mb-10">
@@ -209,7 +209,7 @@ export default function TestimonialsAndFaq() {
               isSunlight ? 'bg-blue-100 text-blue-900 border-blue-300' : 'bg-blue-500/10 text-sky-400 border-blue-500/20'
             }`}>
               <Compass className="w-3.5 h-3.5" />
-              Ecosistema MOTION LAB
+              Resultados MOTION LAB
             </div>
             <h4 className={`text-2xl sm:text-3xl font-black tracking-tight ${
               isSunlight ? 'text-[#020617]' : 'text-white'

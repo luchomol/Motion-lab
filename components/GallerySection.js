@@ -2,7 +2,7 @@
 
 /**
  * ========================================================================
- * COMPONENTE: Ecosistema & Áreas de Entrenamiento (GallerySection.js)
+ * COMPONENTE: Resultados & Áreas de Entrenamiento (GallerySection.js)
  * ========================================================================
  * Galería visual oficial con las áreas de entrenamiento de MOTION LAB:
  * pista de velocidad, sala de fuerza y campo deportivo.
@@ -27,7 +27,7 @@ export default function GallerySection() {
             isSunlight ? 'bg-blue-100 text-blue-900 border-blue-300' : 'bg-blue-500/10 text-sky-400 border-blue-500/20'
           }`}>
             <Compass className="w-3.5 h-3.5" />
-            Ecosistema MOTION LAB
+            Resultados MOTION LAB
           </div>
           <h2 className={`text-3xl sm:text-4xl font-black tracking-tight ${
             isSunlight ? 'text-[#020617]' : 'text-white'

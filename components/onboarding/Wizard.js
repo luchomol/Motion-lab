@@ -14,8 +14,40 @@ import {
   Activity, Heart, ShieldAlert, Sparkles, MessageCircle, Lock, Mail, User, Phone 
 } from 'lucide-react';
 import MotionLabLogo from '@/components/MotionLabLogo';
+import { useTheme } from '@/components/ThemeProvider';
 
 export default function Wizard() {
+  // ------------------------------------------------------------------------
+  // TEMA GLOBAL: el wizard acompaña el modo soleado / noche del sitio
+  // ------------------------------------------------------------------------
+  const { isSunlight } = useTheme();
+
+  // Tokens de color reutilizables para mantener legible el panel en ambos modos
+  const tema = {
+    panel: isSunlight
+      ? 'bg-white border-slate-300 shadow-xl'
+      : 'bg-[#0b1220] border-slate-800 shadow-2xl',
+    titulo: isSunlight ? 'text-slate-900' : 'text-white',
+    parrafo: isSunlight ? 'text-slate-600' : 'text-slate-400',
+    etiqueta: isSunlight ? 'text-slate-700' : 'text-slate-300',
+    campo: isSunlight
+      ? 'w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-slate-900 text-sm focus:outline-none focus:border-sky-600'
+      : 'w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-sky-400',
+    campoIcono: isSunlight
+      ? 'w-full bg-white border border-slate-300 rounded-xl pl-10 pr-4 py-2.5 text-slate-900 text-sm focus:outline-none focus:border-sky-600'
+      : 'w-full bg-slate-900/80 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-400',
+    opcion: isSunlight
+      ? 'bg-white border-slate-300 text-slate-700 hover:border-slate-400'
+      : 'bg-slate-900/60 border-slate-800 text-slate-300 hover:border-slate-700',
+    opcionActiva: isSunlight
+      ? 'bg-blue-50 border-sky-500 text-slate-900 shadow-lg'
+      : 'bg-blue-600/20 border-sky-400 text-white shadow-lg',
+    chip: isSunlight
+      ? 'bg-white text-slate-600 border-slate-300 hover:border-slate-400'
+      : 'bg-slate-900/80 text-slate-400 border-slate-800 hover:border-slate-700',
+    linea: isSunlight ? 'bg-slate-200' : 'bg-slate-800',
+    bordeSuave: isSunlight ? 'border-slate-200' : 'border-slate-800/80',
+  };
   // ------------------------------------------------------------------------
   // ESTADOS DEL FORMULARIO Y PASOS
   // ------------------------------------------------------------------------
@@ -171,16 +203,16 @@ export default function Wizard() {
     <div className="w-full max-w-2xl mx-auto">
       
       {/* TARJETA PRINCIPAL DEL WIZARD */}
-      <div className="bg-[#0b1220] border border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden card-glow">
+      <div className={`border rounded-3xl p-6 sm:p-10 relative overflow-hidden card-glow transition-colors duration-200 ${tema.panel}`}>
         
         {/* BARRA DE PROGRESO */}
         {!registroCompletado && (
           <div className="mb-8">
-            <div className="flex justify-between items-center text-xs font-bold text-slate-400 mb-2">
-              <span className="text-sky-400 tracking-wider uppercase">Paso {paso} de 5</span>
+            <div className={`flex justify-between items-center text-xs font-bold mb-2 ${isSunlight ? 'text-slate-600' : 'text-slate-400'}`}>
+              <span className={`tracking-wider uppercase ${isSunlight ? 'text-sky-700' : 'text-sky-400'}`}>Paso {paso} de 5</span>
               <span>{Math.round((paso / 5) * 100)}% Completado</span>
             </div>
-            <div className="w-full h-2 bg-slate-800/80 rounded-full overflow-hidden">
+            <div className={`w-full h-2 rounded-full overflow-hidden ${isSunlight ? 'bg-slate-200' : 'bg-slate-800/80'}`}>
               <div 
                 className="h-full bg-gradient-to-r from-blue-600 via-sky-500 to-cyan-400 transition-all duration-500"
                 style={{ width: `${(paso / 5) * 100}%` }}
@@ -191,7 +223,7 @@ export default function Wizard() {
 
         {/* MENSAJE DE ERROR SI EXISTE */}
         {errorMsg && (
-          <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm flex items-center gap-2">
+          <div className={`mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-sm flex items-center gap-2 ${isSunlight ? 'text-red-700' : 'text-red-400'}`}>
             <ShieldAlert className="w-5 h-5 shrink-0" />
             <span>{errorMsg}</span>
           </div>
@@ -202,37 +234,37 @@ export default function Wizard() {
            ================================================================ */}
         {registroCompletado ? (
           <div className="text-center py-6 space-y-6 animate-fadeIn">
-            <div className="w-20 h-20 rounded-3xl bg-blue-500/10 border border-sky-400/40 text-sky-400 flex items-center justify-center mx-auto shadow-xl shadow-blue-500/20">
+            <div className={`w-20 h-20 rounded-3xl bg-blue-500/10 border border-sky-400/40 flex items-center justify-center mx-auto shadow-xl shadow-blue-500/20 ${isSunlight ? 'text-sky-700' : 'text-sky-400'}`}>
               <Check className="w-10 h-10 stroke-[3]" />
             </div>
 
             <div>
-              <span className="text-xs font-bold uppercase tracking-widest text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
+              <span className={`text-xs font-bold uppercase tracking-widest bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20 ${isSunlight ? 'text-amber-700' : 'text-amber-400'}`}>
                 Estado: Pendiente de Pago
               </span>
-              <h3 className="text-3xl font-black text-white mt-3">
+              <h3 className={`text-3xl font-black mt-3 ${tema.titulo}`}>
                 ¡Bienvenido a Motion Lab, {formData.nombre}!
               </h3>
-              <p className="text-slate-300 text-sm max-w-md mx-auto mt-2 leading-relaxed">
+              <p className={`text-sm max-w-md mx-auto mt-2 leading-relaxed ${isSunlight ? 'text-slate-700' : 'text-slate-300'}`}>
                 Tu perfil deportivo ha sido guardado. Para que el entrenador Matías active tu cuenta y comience la planificación de tu rutina, coordina el pago por WhatsApp:
               </p>
             </div>
 
             {/* CAJA RESUMEN */}
-            <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 text-left max-w-md mx-auto space-y-2 text-xs text-slate-300">
-              <div className="flex justify-between border-b border-slate-800/80 pb-2">
-                <span className="text-slate-400">Plan Seleccionado:</span>
-                <span className="font-bold text-white">
+            <div className={`border rounded-2xl p-5 text-left max-w-md mx-auto space-y-2 text-xs ${isSunlight ? 'bg-slate-50 border-slate-300 text-slate-700' : 'bg-slate-900/80 border-slate-800 text-slate-300'}`}>
+              <div className={`flex justify-between border-b pb-2 ${tema.bordeSuave}`}>
+                <span className={tema.parrafo}>Plan Seleccionado:</span>
+                <span className={`font-bold ${tema.titulo}`}>
                   {formData.tipoPlan === 'PREMIUM' ? 'Plan Premium Personalizado' : 'Plan Base'}
                 </span>
               </div>
-              <div className="flex justify-between border-b border-slate-800/80 pb-2">
-                <span className="text-slate-400">Objetivo:</span>
-                <span className="font-bold text-white">{formData.objetivo} ({formData.deporte})</span>
+              <div className={`flex justify-between border-b pb-2 ${tema.bordeSuave}`}>
+                <span className={tema.parrafo}>Objetivo:</span>
+                <span className={`font-bold ${tema.titulo}`}>{formData.objetivo} ({formData.deporte})</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Frecuencia:</span>
-                <span className="font-bold text-white">{formData.disponibilidad}</span>
+                <span className={tema.parrafo}>Frecuencia:</span>
+                <span className={`font-bold ${tema.titulo}`}>{formData.disponibilidad}</span>
               </div>
             </div>
 
@@ -247,7 +279,7 @@ export default function Wizard() {
                 <MessageCircle className="w-6 h-6 fill-current" />
                 <span>Coordinar Pago con Matías por WhatsApp</span>
               </a>
-              <span className="text-[11px] text-slate-500 block mt-2">
+              <span className={`text-[11px] block mt-2 ${isSunlight ? 'text-slate-600' : 'text-slate-500'}`}>
                 Se abrirá un chat directo con tu ficha deportiva pre-cargada.
               </span>
             </div>
@@ -260,13 +292,13 @@ export default function Wizard() {
             {paso === 0 && (
               <div className="space-y-6">
                 <div className="text-center sm:text-left">
-                  <span className="text-xs font-bold text-sky-400 uppercase tracking-wider">
+                  <span className={`text-xs font-bold uppercase tracking-wider ${isSunlight ? 'text-sky-700' : 'text-sky-400'}`}>
                     Paso 0 • Membresía
                   </span>
-                  <h3 className="text-2xl sm:text-3xl font-black text-white mt-1">
+                  <h3 className={`text-2xl sm:text-3xl font-black mt-1 ${tema.titulo}`}>
                     Selecciona tu Modalidad de Entrenamiento
                   </h3>
-                  <p className="text-slate-400 text-xs sm:text-sm mt-1">
+                  <p className={`text-xs sm:text-sm mt-1 ${tema.parrafo}`}>
                     Elige el nivel de acompañamiento que necesitas de Matías en Motion Lab.
                   </p>
                 </div>
@@ -279,23 +311,25 @@ export default function Wizard() {
                     onClick={() => actualizarCampo('tipoPlan', 'BASE')}
                     className={`p-6 rounded-2xl text-left border transition-all flex flex-col justify-between ${
                       formData.tipoPlan === 'BASE'
-                        ? 'bg-blue-600/15 border-sky-400 text-white shadow-xl shadow-blue-500/10 ring-1 ring-sky-400'
-                        : 'bg-slate-900/60 border-slate-800 text-slate-300 hover:border-slate-700'
+                        ? isSunlight
+                          ? 'bg-blue-50 border-sky-500 text-slate-900 shadow-xl shadow-blue-500/10 ring-1 ring-sky-500'
+                          : 'bg-blue-600/15 border-sky-400 text-white shadow-xl shadow-blue-500/10 ring-1 ring-sky-400'
+                        : tema.opcion
                     }`}
                   >
                     <div>
-                      <div className="w-10 h-10 rounded-xl bg-slate-800 text-slate-300 flex items-center justify-center mb-3">
-                        <Zap className="w-5 h-5 text-sky-400" />
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${isSunlight ? 'bg-slate-100 text-slate-700' : 'bg-slate-800 text-slate-300'}`}>
+                        <Zap className={`w-5 h-5 ${isSunlight ? 'text-sky-600' : 'text-sky-400'}`} />
                       </div>
-                      <div className="font-extrabold text-lg text-white">Plan Base</div>
-                      <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                      <div className={`font-extrabold text-lg ${tema.titulo}`}>Plan Base</div>
+                      <p className={`text-xs mt-1 leading-relaxed ${tema.parrafo}`}>
                         Rutina personalizada estructurada. Ideal para quienes entrenan por su cuenta con disciplina.
                       </p>
                     </div>
-                    <div className="mt-4 pt-4 border-t border-slate-800/80 flex items-center justify-between">
-                      <span className="text-lg font-black text-white">$29.99/mes</span>
+                    <div className={`mt-4 pt-4 border-t flex items-center justify-between ${tema.bordeSuave}`}>
+                      <span className={`text-lg font-black ${tema.titulo}`}>$29.99/mes</span>
                       <span className={`w-6 h-6 rounded-full flex items-center justify-center border ${
-                        formData.tipoPlan === 'BASE' ? 'bg-sky-400 border-sky-400 text-slate-950' : 'border-slate-700'
+                        formData.tipoPlan === 'BASE' ? 'bg-sky-400 border-sky-400 text-slate-950' : isSunlight ? 'border-slate-400' : 'border-slate-700'
                       }`}>
                         {formData.tipoPlan === 'BASE' && <Check className="w-3.5 h-3.5 stroke-[3]" />}
                       </span>
@@ -308,26 +342,28 @@ export default function Wizard() {
                     onClick={() => actualizarCampo('tipoPlan', 'PREMIUM')}
                     className={`p-6 rounded-2xl text-left border-2 transition-all flex flex-col justify-between relative ${
                       formData.tipoPlan === 'PREMIUM'
-                        ? 'bg-gradient-to-b from-amber-500/15 to-slate-900 border-amber-400 text-white shadow-xl shadow-amber-500/10 ring-1 ring-amber-400'
-                        : 'bg-slate-900/60 border-slate-800 text-slate-300 hover:border-slate-700'
+                        ? isSunlight
+                          ? 'bg-gradient-to-b from-amber-100 to-white border-amber-400 text-slate-900 shadow-xl shadow-amber-500/10 ring-1 ring-amber-400'
+                          : 'bg-gradient-to-b from-amber-500/15 to-slate-900 border-amber-400 text-white shadow-xl shadow-amber-500/10 ring-1 ring-amber-400'
+                        : tema.opcion
                     }`}
                   >
                     <span className="absolute -top-3 right-4 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 text-[10px] font-black uppercase tracking-wider shadow">
                       Recomendado
                     </span>
                     <div>
-                      <div className="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center mb-3">
+                      <div className={`w-10 h-10 rounded-xl bg-amber-500/15 flex items-center justify-center mb-3 ${isSunlight ? 'text-amber-600' : 'text-amber-400'}`}>
                         <Crown className="w-5 h-5" />
                       </div>
-                      <div className="font-extrabold text-lg text-white">Plan Premium</div>
-                      <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                      <div className={`font-extrabold text-lg ${tema.titulo}`}>Plan Premium</div>
+                      <p className={`text-xs mt-1 leading-relaxed ${isSunlight ? 'text-slate-700' : 'text-slate-300'}`}>
                         Asistencia inmediata, revisión de técnica por video, coordinación de clases presenciales y seguimiento 1 a 1.
                       </p>
                     </div>
-                    <div className="mt-4 pt-4 border-t border-slate-800/80 flex items-center justify-between">
-                      <span className="text-lg font-black text-amber-400">$69.99/mes</span>
+                    <div className={`mt-4 pt-4 border-t flex items-center justify-between ${tema.bordeSuave}`}>
+                      <span className="text-lg font-black text-amber-500">$69.99/mes</span>
                       <span className={`w-6 h-6 rounded-full flex items-center justify-center border ${
-                        formData.tipoPlan === 'PREMIUM' ? 'bg-amber-400 border-amber-400 text-slate-950' : 'border-slate-700'
+                        formData.tipoPlan === 'PREMIUM' ? 'bg-amber-400 border-amber-400 text-slate-950' : isSunlight ? 'border-slate-400' : 'border-slate-700'
                       }`}>
                         {formData.tipoPlan === 'PREMIUM' && <Check className="w-3.5 h-3.5 stroke-[3]" />}
                       </span>
@@ -344,10 +380,10 @@ export default function Wizard() {
             {paso === 1 && (
               <div className="space-y-6">
                 <div>
-                  <span className="text-xs font-bold text-sky-400 uppercase tracking-wider">
+                  <span className={`text-xs font-bold uppercase tracking-wider ${isSunlight ? 'text-sky-700' : 'text-sky-400'}`}>
                     Paso 1 • Enfoque Deportivo
                   </span>
-                  <h3 className="text-2xl sm:text-3xl font-black text-white mt-1">
+                  <h3 className={`text-2xl sm:text-3xl font-black mt-1 ${tema.titulo}`}>
                     ¿Cuál es tu Objetivo Primario?
                   </h3>
                 </div>
@@ -365,19 +401,19 @@ export default function Wizard() {
                       onClick={() => actualizarCampo('objetivo', item.id)}
                       className={`p-4 rounded-2xl text-left border transition-all ${
                         formData.objetivo === item.id
-                          ? 'bg-blue-600/20 border-sky-400 text-white shadow-lg'
-                          : 'bg-slate-900/60 border-slate-800 text-slate-300 hover:bg-slate-800'
+                          ? tema.opcionActiva
+                          : `${tema.opcion} ${isSunlight ? 'hover:bg-slate-50' : 'hover:bg-slate-800'}`
                       }`}
                     >
-                      <div className="font-bold text-sm text-white">{item.label}</div>
-                      <div className="text-[11px] text-slate-400 mt-1 leading-snug">{item.desc}</div>
+                      <div className={`font-bold text-sm ${tema.titulo}`}>{item.label}</div>
+                      <div className={`text-[11px] mt-1 leading-snug ${tema.parrafo}`}>{item.desc}</div>
                     </button>
                   ))}
                 </div>
 
                 {/* INPUT DEPORTE */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
+                  <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${tema.etiqueta}`}>
                     Deporte o Disciplina que practicas *
                   </label>
                   <input
@@ -386,13 +422,13 @@ export default function Wizard() {
                     placeholder="Ej. Fútbol, Rugby, Running, Tenis, Gimnasio Tradicional..."
                     value={formData.deporte}
                     onChange={(e) => actualizarCampo('deporte', e.target.value)}
-                    className="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-sky-400"
+                    className={tema.campo}
                   />
                 </div>
 
                 {/* BOTONES SÍ / NO PARA CLUB */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
+                  <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${tema.etiqueta}`}>
                     ¿Entrenas o compites en algún Club o Institución Federada?
                   </label>
                   <div className="grid grid-cols-2 gap-3 max-w-xs">
@@ -402,7 +438,9 @@ export default function Wizard() {
                       className={`py-3 px-4 rounded-xl font-bold text-sm border transition-all ${
                         formData.club === true
                           ? 'bg-sky-500 text-slate-950 border-sky-400'
-                          : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800'
+                          : isSunlight
+                            ? 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
+                            : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800'
                       }`}
                     >
                       Sí, pertenezco a un club
@@ -413,7 +451,9 @@ export default function Wizard() {
                       className={`py-3 px-4 rounded-xl font-bold text-sm border transition-all ${
                         formData.club === false
                           ? 'bg-sky-500 text-slate-950 border-sky-400'
-                          : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800'
+                          : isSunlight
+                            ? 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
+                            : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800'
                       }`}
                     >
                       No, entreno por mi cuenta
@@ -429,10 +469,10 @@ export default function Wizard() {
             {paso === 2 && (
               <div className="space-y-6">
                 <div>
-                  <span className="text-xs font-bold text-sky-400 uppercase tracking-wider">
+                  <span className={`text-xs font-bold uppercase tracking-wider ${isSunlight ? 'text-sky-700' : 'text-sky-400'}`}>
                     Paso 2 • Nivel y Capacidad
                   </span>
-                  <h3 className="text-2xl sm:text-3xl font-black text-white mt-1">
+                  <h3 className={`text-2xl sm:text-3xl font-black mt-1 ${tema.titulo}`}>
                     Tu Nivel Actual de Entrenamiento
                   </h3>
                 </div>
@@ -450,19 +490,19 @@ export default function Wizard() {
                       onClick={() => actualizarCampo('nivel', item.id)}
                       className={`p-4 rounded-2xl text-left border transition-all ${
                         formData.nivel === item.id
-                          ? 'bg-blue-600/20 border-sky-400 text-white shadow-lg'
-                          : 'bg-slate-900/60 border-slate-800 text-slate-300 hover:bg-slate-800'
+                          ? tema.opcionActiva
+                          : `${tema.opcion} ${isSunlight ? 'hover:bg-slate-50' : 'hover:bg-slate-800'}`
                       }`}
                     >
-                      <div className="font-bold text-sm text-white">{item.label}</div>
-                      <div className="text-[11px] text-slate-400 mt-0.5">{item.desc}</div>
+                      <div className={`font-bold text-sm ${tema.titulo}`}>{item.label}</div>
+                      <div className={`text-[11px] mt-0.5 ${tema.parrafo}`}>{item.desc}</div>
                     </button>
                   ))}
                 </div>
 
                 {/* FOCO MÚLTIPLE */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
+                  <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${tema.etiqueta}`}>
                     Focos prioritarios de trabajo (Selecciona uno o más):
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
@@ -475,8 +515,10 @@ export default function Wizard() {
                           onClick={() => toggleFoco(foco)}
                           className={`py-3 px-3 rounded-xl text-xs font-extrabold border transition-all flex items-center justify-center gap-1.5 ${
                             activo
-                              ? 'bg-sky-500/20 text-sky-400 border-sky-400 shadow-sm'
-                              : 'bg-slate-900/80 text-slate-400 border-slate-800 hover:border-slate-700'
+                              ? isSunlight
+                                ? 'bg-sky-100 text-sky-700 border-sky-500 shadow-sm'
+                                : 'bg-sky-500/20 text-sky-400 border-sky-400 shadow-sm'
+                              : tema.chip
                           }`}
                         >
                           {activo && <Check className="w-3.5 h-3.5 stroke-[3]" />}
@@ -489,13 +531,13 @@ export default function Wizard() {
 
                 {/* SELECT DISPONIBILIDAD */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
+                  <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${tema.etiqueta}`}>
                     Disponibilidad Semanal para Entrenar:
                   </label>
                   <select
                     value={formData.disponibilidad}
                     onChange={(e) => actualizarCampo('disponibilidad', e.target.value)}
-                    className="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-sky-400 cursor-pointer"
+                    className={`${tema.campo} cursor-pointer`}
                   >
                     <option value="2 días por semana">2 días por semana</option>
                     <option value="3 días por semana">3 días por semana (Frecuencia Estándar)</option>
@@ -512,19 +554,19 @@ export default function Wizard() {
             {paso === 3 && (
               <div className="space-y-6">
                 <div>
-                  <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">
+                  <span className={`text-xs font-bold uppercase tracking-wider ${isSunlight ? 'text-amber-700' : 'text-amber-400'}`}>
                     Paso 3 (Avanzado) • Métricas de Carga
                   </span>
-                  <h3 className="text-2xl sm:text-3xl font-black text-white mt-1">
+                  <h3 className={`text-2xl sm:text-3xl font-black mt-1 ${tema.titulo}`}>
                     Calibración de Fuerza Máxima
                   </h3>
-                  <p className="text-slate-400 text-xs sm:text-sm mt-1">
+                  <p className={`text-xs sm:text-sm mt-1 ${tema.parrafo}`}>
                     Detectamos que tienes nivel {formData.nivel} con foco en {formData.focos.join('/')}. Matías necesita estos datos para calcular tu volumen exacto.
                   </p>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
+                  <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${tema.etiqueta}`}>
                     RM (Repetición Máxima) Estimada en Levantamientos Clave:
                   </label>
                   <input
@@ -532,15 +574,15 @@ export default function Wizard() {
                     placeholder="Ej: Sentadilla 120kg, Banco 90kg, Peso Muerto 150kg..."
                     value={formData.rmEstimado}
                     onChange={(e) => actualizarCampo('rmEstimado', e.target.value)}
-                    className="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-sky-400"
+                    className={tema.campo}
                   />
-                  <span className="text-[11px] text-slate-500 block mt-1">
+                  <span className={`text-[11px] block mt-1 ${isSunlight ? 'text-slate-600' : 'text-slate-500'}`}>
                     Si no conoces tu 1RM exacto, puedes colocar el peso con el que haces 5 o 8 repeticiones.
                   </span>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
+                  <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${tema.etiqueta}`}>
                     Puntos Débiles o Asimetrías a Mejorar:
                   </label>
                   <textarea
@@ -548,7 +590,7 @@ export default function Wizard() {
                     placeholder="Ej: Me cuesta despegar la barra del suelo, siento desbalance en la pierna izquierda, fatiga rápida en hombros..."
                     value={formData.puntosDebiles}
                     onChange={(e) => actualizarCampo('puntosDebiles', e.target.value)}
-                    className="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-sky-400"
+                    className={tema.campo}
                   />
                 </div>
               </div>
@@ -560,17 +602,17 @@ export default function Wizard() {
             {paso === 4 && (
               <div className="space-y-6">
                 <div>
-                  <span className="text-xs font-bold text-sky-400 uppercase tracking-wider">
+                  <span className={`text-xs font-bold uppercase tracking-wider ${isSunlight ? 'text-sky-700' : 'text-sky-400'}`}>
                     Paso 4 • Parámetros Físicos
                   </span>
-                  <h3 className="text-2xl sm:text-3xl font-black text-white mt-1">
+                  <h3 className={`text-2xl sm:text-3xl font-black mt-1 ${tema.titulo}`}>
                     Composición y Salud Articular
                   </h3>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
+                    <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${tema.etiqueta}`}>
                       Peso Corporal (Kg) *
                     </label>
                     <input
@@ -580,12 +622,12 @@ export default function Wizard() {
                       placeholder="Ej. 75.5"
                       value={formData.peso}
                       onChange={(e) => actualizarCampo('peso', e.target.value)}
-                      className="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-sky-400"
+                      className={tema.campo}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
+                    <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${tema.etiqueta}`}>
                       Altura (cm) *
                     </label>
                     <input
@@ -594,13 +636,13 @@ export default function Wizard() {
                       placeholder="Ej. 178"
                       value={formData.altura}
                       onChange={(e) => actualizarCampo('altura', e.target.value)}
-                      className="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-sky-400"
+                      className={tema.campo}
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
+                  <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${tema.etiqueta}`}>
                     Lesiones previas, cirugías o molestias articulares:
                   </label>
                   <textarea
@@ -608,9 +650,9 @@ export default function Wizard() {
                     placeholder="Ej. Cirugía de menisco en 2022, dolor lumbar ocasional al estar sentado..."
                     value={formData.lesiones}
                     onChange={(e) => actualizarCampo('lesiones', e.target.value)}
-                    className="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-sky-400"
+                    className={tema.campo}
                   />
-                  <span className="text-[11px] text-slate-500 block mt-1">
+                  <span className={`text-[11px] block mt-1 ${isSunlight ? 'text-slate-600' : 'text-slate-500'}`}>
                     Si no tienes ninguna lesión, puedes dejarlo en blanco o escribir &quot;Ninguna&quot;.
                   </span>
                 </div>
@@ -623,13 +665,13 @@ export default function Wizard() {
             {paso === 5 && (
               <form onSubmit={manejarRegistro} className="space-y-6">
                 <div>
-                  <span className="text-xs font-bold text-sky-400 uppercase tracking-wider">
+                  <span className={`text-xs font-bold uppercase tracking-wider ${isSunlight ? 'text-sky-700' : 'text-sky-400'}`}>
                     Paso 5 • Crear Cuenta
                   </span>
-                  <h3 className="text-2xl sm:text-3xl font-black text-white mt-1">
+                  <h3 className={`text-2xl sm:text-3xl font-black mt-1 ${tema.titulo}`}>
                     Crea tu Cuenta para Guardar tu Ficha
                   </h3>
-                  <p className="text-slate-400 text-xs sm:text-sm mt-1">
+                  <p className={`text-xs sm:text-sm mt-1 ${tema.parrafo}`}>
                     Accederás a tu panel de entrenamiento y seguimiento con Matías.
                   </p>
                 </div>
@@ -638,7 +680,7 @@ export default function Wizard() {
                 <button
                   type="button"
                   onClick={iniciarConGoogle}
-                  className="w-full py-3.5 px-4 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-sm flex items-center justify-center gap-3 shadow-md transition-all hover:scale-[1.01]"
+                  className={`w-full py-3.5 px-4 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-sm flex items-center justify-center gap-3 shadow-md transition-all hover:scale-[1.01] border ${isSunlight ? 'border-slate-300' : 'border-transparent'}`}
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
                     <path
@@ -663,17 +705,17 @@ export default function Wizard() {
 
                 {/* DIVISOR VISUAL */}
                 <div className="flex items-center gap-3">
-                  <div className="flex-grow h-px bg-slate-800" />
-                  <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold">
+                  <div className={`flex-grow h-px ${tema.linea}`} />
+                  <span className={`text-xs uppercase tracking-wider font-semibold ${isSunlight ? 'text-slate-600' : 'text-slate-500'}`}>
                     o regístrate con tu email
                   </span>
-                  <div className="flex-grow h-px bg-slate-800" />
+                  <div className={`flex-grow h-px ${tema.linea}`} />
                 </div>
 
                 {/* CAMPOS TRADICIONALES */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Nombre *</label>
+                    <label className={`block text-xs font-semibold mb-1 ${tema.etiqueta}`}>Nombre *</label>
                     <div className="relative">
                       <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
                       <input
@@ -682,26 +724,26 @@ export default function Wizard() {
                         placeholder="Juan"
                         value={formData.nombre}
                         onChange={(e) => actualizarCampo('nombre', e.target.value)}
-                        className="w-full bg-slate-900/80 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-400"
+                        className={tema.campoIcono}
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Apellido *</label>
+                    <label className={`block text-xs font-semibold mb-1 ${tema.etiqueta}`}>Apellido *</label>
                     <input
                       type="text"
                       required
                       placeholder="Pérez"
                       value={formData.apellido}
                       onChange={(e) => actualizarCampo('apellido', e.target.value)}
-                      className="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-400"
+                      className={tema.campo}
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">WhatsApp / Teléfono *</label>
+                  <label className={`block text-xs font-semibold mb-1 ${tema.etiqueta}`}>WhatsApp / Teléfono *</label>
                   <div className="relative">
                     <Phone className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
                     <input
@@ -710,13 +752,13 @@ export default function Wizard() {
                       placeholder="+54 9 11 1234-5678"
                       value={formData.whatsapp}
                       onChange={(e) => actualizarCampo('whatsapp', e.target.value)}
-                      className="w-full bg-slate-900/80 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-400"
+                      className={tema.campoIcono}
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Correo Electrónico *</label>
+                  <label className={`block text-xs font-semibold mb-1 ${tema.etiqueta}`}>Correo Electrónico *</label>
                   <div className="relative">
                     <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
                     <input
@@ -725,13 +767,13 @@ export default function Wizard() {
                       placeholder="juan@ejemplo.com"
                       value={formData.email}
                       onChange={(e) => actualizarCampo('email', e.target.value)}
-                      className="w-full bg-slate-900/80 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-400"
+                      className={tema.campoIcono}
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Crear Contraseña *</label>
+                  <label className={`block text-xs font-semibold mb-1 ${tema.etiqueta}`}>Crear Contraseña *</label>
                   <div className="relative">
                     <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
                     <input
@@ -740,7 +782,7 @@ export default function Wizard() {
                       placeholder="Mínimo 6 caracteres"
                       value={formData.password}
                       onChange={(e) => actualizarCampo('password', e.target.value)}
-                      className="w-full bg-slate-900/80 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-white text-sm focus:outline-none focus:border-sky-400"
+                      className={tema.campoIcono}
                     />
                   </div>
                 </div>
@@ -766,12 +808,14 @@ export default function Wizard() {
 
             {/* BOTONES DE NAVEGACIÓN ANTERIOR / SIGUIENTE (Pasos 0 a 4) */}
             {paso < 5 && (
-              <div className="flex items-center justify-between pt-6 border-t border-slate-800/80 mt-8">
+              <div className={`flex items-center justify-between pt-6 border-t mt-8 ${tema.bordeSuave}`}>
                 <button
                   type="button"
                   onClick={irAlAnterior}
                   disabled={paso === 0}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-white disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                  className={`inline-flex items-center gap-1.5 text-xs font-semibold disabled:opacity-30 disabled:pointer-events-none transition-colors ${
+                    isSunlight ? 'text-slate-600 hover:text-slate-900' : 'text-slate-400 hover:text-white'
+                  }`}
                 >
                   <ArrowLeft className="w-4 h-4" />
                   <span>Anterior</span>

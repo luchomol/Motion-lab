@@ -8,21 +8,17 @@
  * 1. Navbar: Barra de navegación con selector de modo soleado/noche
  * 2. Hero: Portada de presentación de alto rendimiento con llamado a acción
  * 3. AboutTrainer: Filosofía de entrenamiento, biomecánica y método
- * 4. GallerySection: Ecosistema y áreas de entrenamiento (pista, sala, campo)
- * 5. MentalHealthSection: Educación y recursos de salud mental para atletas
- * 6. Footer: Pie de página y canales de contacto oficial
- * 7. WhatsAppButton: Botón flotante para escritorio
- * 8. MobileBottomBar: Barra inferior ergonómica para celulares
+ * 4. GallerySection: Resultados y áreas de entrenamiento (pista, sala, campo)
+ * 5. Footer: Pie de página y canales de contacto oficial
+ * 6. WhatsAppButton: Botón flotante para escritorio
  */
 
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import AboutTrainer from '@/components/AboutTrainer';
 import GallerySection from '@/components/GallerySection';
-import MentalHealthSection from '@/components/MentalHealthSection';
 import Footer from '@/components/Footer';
 import WhatsAppButton from '@/components/WhatsAppButton';
-import MobileBottomBar from '@/components/MobileBottomBar';
 
 export default function Home() {
   return (
@@ -38,11 +34,8 @@ export default function Home() {
         {/* Quién es el coach y cómo trabaja el laboratorio */}
         <AboutTrainer />
 
-        {/* Áreas de entrenamiento y ecosistema visual */}
+        {/* Áreas de entrenamiento y resultados visuales */}
         <GallerySection />
-
-        {/* Salud mental, manejo del estrés y recursos de ayuda */}
-        <MentalHealthSection />
       </main>
 
       {/* 3. Pie de página con información y redes */}
@@ -50,9 +43,6 @@ export default function Home() {
 
       {/* 4. Botón flotante para escritorio */}
       <WhatsAppButton />
-
-      {/* 5. Barra de acción ergonómica para celulares */}
-      <MobileBottomBar />
     </div>
   );
 }

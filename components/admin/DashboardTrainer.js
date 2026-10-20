@@ -14,7 +14,8 @@
  *    - Bloque de Desarrollo
  * 5. Ver el contador de sesiones completadas de cada alumno dentro de la
  *    columna 'Bienestar & Fatiga' (sube cuando el alumno finaliza un día).
- * 6. Cambiar entre Modo Noche y Modo Soleado en toda la pantalla.
+ * 6. Compartir un código QR con los clientes para que abran la web desde el celular.
+ * 7. Cambiar entre Modo Noche y Modo Soleado en toda la pantalla.
  */
 
 import { useState, useEffect } from 'react';
@@ -23,6 +24,7 @@ import {
   Search, Eye, Plus, Trash2, ArrowRight, X, Sparkles, Activity, RotateCcw 
 } from 'lucide-react';
 import RoutineBuilder from './RoutineBuilder';
+import QrShareCard from './QrShareCard';
 import { useTheme } from '@/components/ThemeProvider';
 
 export default function DashboardTrainer() {
@@ -454,6 +456,9 @@ export default function DashboardTrainer() {
           </div>
         </div>
       </div>
+
+      {/* TARJETA DE QR PARA COMPARTIR EL ACCESO CON CLIENTES */}
+      <QrShareCard />
 
       {/* FILTROS Y BÚSQUEDA */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">

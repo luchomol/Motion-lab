@@ -52,7 +52,7 @@ export default function Footer() {
               </li>
               <li>
                 <a href="/#galeria" className={`transition-colors ${isSunlight ? 'hover:text-blue-700' : 'hover:text-sky-400'}`}>
-                  Ecosistema & Pista
+                  Resultados & Pista
                 </a>
               </li>
               <li>

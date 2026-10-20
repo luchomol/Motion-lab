@@ -9,7 +9,7 @@
  */
 
 import { useState } from 'react';
-import { Menu, X, Dumbbell, ShieldAlert, UserPlus, ArrowRight, LogIn, Sun, Moon, Brain } from 'lucide-react';
+import { Menu, X, Dumbbell, ShieldAlert, Sun, Moon } from 'lucide-react';
 import Link from 'next/link';
 import MotionLabLogo from './MotionLabLogo';
 import { useTheme } from './ThemeProvider';
@@ -38,15 +38,6 @@ export default function Navbar() {
 
           {/* ENLACES DE NAVEGACIÓN EN ESCRITORIO */}
           <div className="hidden lg:flex items-center gap-6 text-sm font-semibold">
-            <Link 
-              href="/onboarding" 
-              className={`transition-colors flex items-center gap-1.5 font-bold ${
-                isSunlight ? 'text-blue-700 hover:text-blue-900' : 'text-sky-400 hover:text-sky-300'
-              }`}
-            >
-              <UserPlus className="w-4 h-4" />
-              Onboarding Alumno
-            </Link>
             <Link 
               href="/entrenamiento" 
               className={`transition-colors flex items-center gap-1.5 font-semibold ${
@@ -79,16 +70,7 @@ export default function Navbar() {
                 isSunlight ? 'text-slate-800 hover:text-blue-700' : 'text-slate-200 hover:text-sky-400'
               }`}
             >
-              Ecosistema
-            </a>
-            <a 
-              href="/#salud-mental" 
-              className={`transition-colors flex items-center gap-1.5 font-semibold ${
-                isSunlight ? 'text-slate-800 hover:text-emerald-700' : 'text-slate-200 hover:text-emerald-400'
-              }`}
-            >
-              <Brain className="w-4 h-4 text-emerald-500" />
-              Salud Mental
+              Resultados
             </a>
           </div>
 
@@ -119,22 +101,6 @@ export default function Navbar() {
               )}
             </button>
 
-            <Link
-              href="/login"
-              className={`text-sm font-bold transition-colors flex items-center gap-1 px-2.5 py-1.5 ${
-                isSunlight ? 'text-slate-800 hover:text-blue-700' : 'text-slate-200 hover:text-white'
-              }`}
-            >
-              Iniciar Sesión
-            </Link>
-
-            <Link
-              href="/onboarding"
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-black uppercase tracking-wider text-white bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-500 hover:to-sky-400 rounded-full transition-all shadow-md shadow-blue-500/25 hover:scale-105 touch-target"
-            >
-              <span>Comenzar</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
           </div>
 
           {/* BOTÓN MÓVIL (TOGGLE RÁPIDO Y MENÚ HAMBURGUESA) */}
@@ -143,7 +109,7 @@ export default function Navbar() {
             <button
               onClick={toggleSunlight}
               type="button"
-              className={`p-2.5 rounded-xl border transition-colors touch-target ${
+              className={`sm:hidden p-2.5 rounded-xl border transition-colors touch-target ${
                 isSunlight
                   ? 'bg-slate-100 border-slate-300 text-slate-900'
                   : 'bg-slate-900 border-slate-800 text-amber-400'
@@ -186,26 +152,6 @@ export default function Navbar() {
             : 'bg-[#0a0f1d] border-slate-800 text-slate-100'
         }`}>
           <Link
-            href="/login"
-            onClick={() => setMenuAbierto(false)}
-            className={`block text-base font-bold py-2.5 flex items-center gap-2.5 touch-target ${
-              isSunlight ? 'text-blue-700' : 'text-sky-400'
-            }`}
-          >
-            <LogIn className="w-5 h-5" />
-            <span>Iniciar Sesión</span>
-          </Link>
-          <Link
-            href="/onboarding"
-            onClick={() => setMenuAbierto(false)}
-            className={`block text-base font-semibold py-2.5 flex items-center gap-2.5 touch-target ${
-              isSunlight ? 'text-slate-900 hover:text-blue-700' : 'text-slate-200 hover:text-sky-400'
-            }`}
-          >
-            <UserPlus className="w-5 h-5 text-blue-500" />
-            <span>Onboarding Alumno</span>
-          </Link>
-          <Link
             href="/entrenamiento"
             onClick={() => setMenuAbierto(false)}
             className={`block text-base font-semibold py-2.5 flex items-center gap-2.5 touch-target ${
@@ -241,27 +187,8 @@ export default function Navbar() {
               isSunlight ? 'text-slate-900 hover:text-blue-700' : 'text-slate-200 hover:text-sky-400'
             }`}
           >
-            Ecosistema MOTION LAB
+            Resultados MOTION LAB
           </a>
-          <a
-            href="/#salud-mental"
-            onClick={() => setMenuAbierto(false)}
-            className={`block text-base font-semibold py-2.5 flex items-center gap-2.5 touch-target ${
-              isSunlight ? 'text-slate-900 hover:text-emerald-700' : 'text-slate-200 hover:text-emerald-400'
-            }`}
-          >
-            <Brain className="w-5 h-5 text-emerald-500" />
-            <span>Salud Mental & Bienestar</span>
-          </a>
-          <div className="pt-2">
-            <Link
-              href="/onboarding"
-              onClick={() => setMenuAbierto(false)}
-              className="w-full block text-center py-3.5 text-sm font-black uppercase tracking-wider text-white bg-gradient-to-r from-blue-600 to-sky-500 rounded-xl shadow-md touch-target"
-            >
-              Comenzar Onboarding
-            </Link>
-          </div>
         </div>
       )}
     </nav>

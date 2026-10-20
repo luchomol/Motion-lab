@@ -8,7 +8,6 @@
 
 import Wizard from '@/components/onboarding/Wizard';
 import TrainingHeader from '@/components/training/TrainingHeader';
-import MobileBottomBar from '@/components/MobileBottomBar';
 
 export const metadata = {
   title: 'Onboarding & Registro | MOTION LAB',
@@ -23,17 +22,14 @@ export default function OnboardingPage() {
       <TrainingHeader />
 
       {/* CONTENIDO PRINCIPAL: WIZARD */}
-      <main className="flex-grow flex items-center justify-center py-4 pb-20 lg:pb-8">
+      <main className="flex-grow flex items-center justify-center py-4 pb-8">
         <Wizard />
       </main>
 
       {/* PIE DISCRETO */}
-      <footer className="max-w-4xl mx-auto w-full text-center pt-8 pb-16 lg:pb-0 text-xs text-slate-500">
+      <footer className="max-w-4xl mx-auto w-full text-center pt-8 pb-8 text-xs text-slate-500">
         © {new Date().getFullYear()} MOTION LAB • Matías Personal Trainer • Todos los derechos reservados.
       </footer>
-
-      {/* BARRA MÓVIL INFERIOR */}
-      <MobileBottomBar />
     </div>
   );
 }

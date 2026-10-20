@@ -39,6 +39,7 @@ export default function WorkoutView({
   const [mostrarModalPre, setMostrarModalPre] = useState(false);
   const [mostrarModalPost, setMostrarModalPost] = useState(false);
   const [guardandoPost, setGuardandoPost] = useState(false);
+  const [mostrarAvisoSeries, setMostrarAvisoSeries] = useState(false);
   const [preCheckinHecho, setPreCheckinHecho] = useState(
     Boolean(rutinaInicial?.energiaInicial)
   );
@@ -164,6 +165,22 @@ export default function WorkoutView({
     return Math.round((seriesCompletadas / totalSeries) * 100);
   }, [rutina]);
 
+  // Recordatorio: series de desarrollo que todavía no fueron guardadas
+  const seriesPendientes = useMemo(() => {
+    if (!rutina) return 0;
+    let pendientes = 0;
+    rutina.bloques?.forEach((b) => {
+      if (b.tipo === 'DESARROLLO') {
+        b.ejercicios?.forEach((ej) => {
+          (ej.series || []).forEach((s) => {
+            if (!s.completado) pendientes += 1;
+          });
+        });
+      }
+    });
+    return pendientes;
+  }, [rutina]);
+
   // Guardar respuestas del modal Pre-Entrenamiento (1 clic)
   const handleGuardarPreWorkout = async (datosPre) => {
     setPreCheckinHecho(true);
@@ -192,6 +209,17 @@ export default function WorkoutView({
 
   // Abrir modal de evaluación post-entrenamiento (RPE, impacto anímico, desahogo)
   const handleFinalizarEntrenamiento = () => {
+    // Si quedan series sin guardar, recordarle al alumno antes de cerrar el día
+    if (seriesPendientes > 0) {
+      setMostrarAvisoSeries(true);
+      return;
+    }
+    setMostrarModalPost(true);
+  };
+
+  // El alumno decidió finalizar aunque queden series sin guardar
+  const continuarFinalizacion = () => {
+    setMostrarAvisoSeries(false);
     setMostrarModalPost(true);
   };
 
@@ -658,6 +686,24 @@ export default function WorkoutView({
 
       {/* BOTÓN FINAL DE COMPLETAR O GUARDAR CAMBIOS */}
       <div className="text-center px-4 pt-4 space-y-3">
+        {seriesPendientes > 0 && (
+          <div className={`text-left flex items-start gap-3 p-3.5 rounded-2xl border ${
+            isSunlight
+              ? 'bg-amber-50 border-amber-300 text-amber-900'
+              : 'bg-amber-500/10 border-amber-500/30 text-amber-200'
+          }`}>
+            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-amber-500" />
+            <div className="text-xs sm:text-sm">
+              <p className="font-black">
+                Te {seriesPendientes === 1 ? 'queda 1 serie' : `quedan ${seriesPendientes} series`} sin guardar.
+              </p>
+              <p className="font-medium mt-0.5">
+                Completalas antes de finalizar para que Matías vea tu entrenamiento completo.
+              </p>
+            </div>
+          </div>
+        )}
+
         <button
           type="button"
           onClick={handleFinalizarEntrenamiento}
@@ -709,6 +755,45 @@ export default function WorkoutView({
         nombreRutina={rutina.nombre}
         guardando={guardandoPost}
       />
+
+      {/* RECORDATORIO: SERIES PENDIENTES ANTES DE FINALIZAR */}
+      {mostrarAvisoSeries && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm animate-fadeIn">
+          <div className={`w-full max-w-md rounded-3xl p-6 sm:p-7 shadow-2xl border relative ${
+            isSunlight ? 'bg-white border-amber-300 text-slate-900' : 'bg-[#0c1322] border-amber-500/40 text-white'
+          }`}>
+            <div className="w-14 h-14 rounded-2xl bg-amber-500/15 text-amber-500 flex items-center justify-center mb-4">
+              <AlertCircle className="w-8 h-8" />
+            </div>
+            <h3 className={`text-xl font-black ${isSunlight ? 'text-slate-950' : 'text-white'}`}>
+              Te {seriesPendientes === 1 ? 'queda 1 serie' : `quedan ${seriesPendientes} series`} por completar
+            </h3>
+            <p className={`text-sm mt-2 leading-relaxed ${isSunlight ? 'text-slate-700' : 'text-slate-300'}`}>
+              Todavía hay series sin guardar en el bloque de Desarrollo. Si finalizás ahora, esas series quedarán vacías en tu planilla.
+            </p>
+            <div className="mt-6 space-y-2.5">
+              <button
+                type="button"
+                onClick={() => setMostrarAvisoSeries(false)}
+                className="w-full py-3.5 px-5 rounded-2xl bg-gradient-to-r from-blue-700 via-blue-600 to-sky-500 hover:from-blue-600 hover:to-sky-400 text-white font-black text-sm shadow-lg shadow-blue-600/25 transition-all active:scale-[0.98]"
+              >
+                Volver y completar las series
+              </button>
+              <button
+                type="button"
+                onClick={continuarFinalizacion}
+                className={`w-full py-3 px-5 rounded-2xl font-bold text-xs border transition-colors ${
+                  isSunlight
+                    ? 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-700'
+                    : 'bg-slate-900 hover:bg-slate-800 border-slate-700 text-slate-300'
+                }`}
+              >
+                Finalizar de todos modos
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

@@ -12,7 +12,6 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import TrainingContainer from '@/components/training/TrainingContainer';
 import TrainingHeader from '@/components/training/TrainingHeader';
-import MobileBottomBar from '@/components/MobileBottomBar';
 
 export const metadata = {
   title: 'Mi Entrenamiento • Plan Semanal | MOTION LAB',
@@ -31,7 +30,7 @@ export default async function EntrenamientoPage() {
       <TrainingHeader user={session?.user} />
 
       {/* CONTENIDO PRINCIPAL CON EL ID DEL ALUMNO AUTENTICADO */}
-      <main className="flex-grow max-w-4xl mx-auto w-full pb-20 lg:pb-8">
+      <main className="flex-grow max-w-4xl mx-auto w-full pb-8">
         <TrainingContainer
           alumnoId={alumnoId}
           alumnoNombre={alumnoNombre}
@@ -40,12 +39,9 @@ export default async function EntrenamientoPage() {
       </main>
 
       {/* PIE */}
-      <footer className="max-w-4xl mx-auto w-full text-center pt-8 pb-16 lg:pb-0 text-xs text-slate-500">
+      <footer className="max-w-4xl mx-auto w-full text-center pt-8 pb-8 text-xs text-slate-500">
         © {new Date().getFullYear()} MOTION LAB • Planificación Semanal y Planilla Digital de Entrenamiento.
       </footer>
-
-      {/* BARRA MÓVIL INFERIOR */}
-      <MobileBottomBar />
     </div>
   );
 }

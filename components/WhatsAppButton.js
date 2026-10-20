@@ -6,7 +6,7 @@
  * ========================================================================
  * Permite que los visitantes en computadoras y tablets hagan clic en cualquier momento
  * para chatear directamente con el entrenador.
- * En celulares, la acción está convenientemente integrada en MobileBottomBar.
+ * Visible únicamente en pantallas de escritorio.
  */
 
 import { MessageCircle } from 'lucide-react';

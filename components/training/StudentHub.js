@@ -6,14 +6,16 @@
  * ========================================================================
  * - Muestra de forma dinámica el "Entrenamiento de Hoy" sugerido por Matías.
  * - Los días completados quedan marcados con tilde verde y botón de "✏️ Editar Día X".
+ * - Vinculación de reloj deportivo para medir pulso, pasos y calorías.
  * - Soporte de Modo Soleado de Alto Contraste para entrenar al aire libre bajo el sol.
  */
 
 import { 
   Calendar, Clock, ArrowRight, CheckCircle2, 
-  RotateCcw, Sparkles, Flame, PlayCircle, Edit3, Trophy, ChevronRight, Brain 
+  RotateCcw, Sparkles, Flame, PlayCircle, Edit3, Trophy, ChevronRight 
 } from 'lucide-react';
 import { useTheme } from '@/components/ThemeProvider';
+import WatchLinkCard from './WatchLinkCard';
 
 export default function StudentHub({ 
   planSemanal = [], 
@@ -370,41 +372,9 @@ export default function StudentHub({
       )}
 
       {/* ================================================================
-          RECORDATORIO DE SALUD MENTAL (SECCIÓN INFORMATIVA)
+          VINCULACIÓN DE RELOJ DEPORTIVO PARA MEDICIONES
          ================================================================ */}
-      <div className={`rounded-3xl p-5 sm:p-6 border-2 transition-all ${
-        isSunlight
-          ? 'bg-emerald-50 border-emerald-300 text-slate-900 shadow-md'
-          : 'bg-gradient-to-br from-emerald-950/30 via-[#0a1818] to-[#05070c] border-emerald-500/30 text-white'
-      }`}>
-        <div className="flex items-start gap-3.5">
-          <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${
-            isSunlight ? 'bg-emerald-100 text-emerald-700' : 'bg-emerald-500/10 text-emerald-400'
-          }`}>
-            <Brain className="w-5 h-5" />
-          </div>
-          <div>
-            <h3 className={`font-black text-sm sm:text-base ${isSunlight ? 'text-slate-900' : 'text-white'}`}>
-              🧠 Salud Mental & Bienestar
-            </h3>
-            <p className={`text-xs sm:text-sm font-medium mt-1.5 leading-relaxed ${
-              isSunlight ? 'text-slate-700' : 'text-slate-300'
-            }`}>
-              Si hoy venís con la cabeza a mil, probá respirar <strong>4-7-8</strong> antes de arrancar:
-              inhalá 4 segundos, sostené 7 y exhalá lento en 8 (4 rondas). Y recordá: la irritabilidad
-              constante, no dormir o perder las ganas no se ignoran. Hablalo con Matías o con alguien de confianza.
-            </p>
-            <a
-              href="/#salud-mental"
-              className={`inline-flex items-center gap-1.5 mt-3 text-xs font-black transition-colors ${
-                isSunlight ? 'text-emerald-700 hover:text-emerald-900' : 'text-emerald-400 hover:text-emerald-300'
-              }`}
-            >
-              Ver consejos y recursos de ayuda →
-            </a>
-          </div>
-        </div>
-      </div>
+      <WatchLinkCard />
 
     </div>
   );

@@ -14,10 +14,30 @@
 import { useState, useEffect } from 'react';
 import { 
   Check, MessageSquare, ChevronDown, ChevronUp, Save, 
-  Minus, Plus, Edit3 
+  Minus, Plus, Edit3, HelpCircle, X 
 } from 'lucide-react';
 import VideoPlayer from './VideoPlayer';
 import { useTheme } from '@/components/ThemeProvider';
+
+// Explicaciones cortas que aparecen al tocar cada dato de la serie
+const AYUDA_CAMPOS = {
+  reps: {
+    titulo: 'Repeticiones',
+    texto: 'Cuántas repeticiones hiciste en esta serie. Si hiciste 8, tocá + hasta llegar a 8.',
+  },
+  kg: {
+    titulo: 'Peso (kg)',
+    texto: 'Peso que usaste en esta serie. Los botones suman o restan 2,5 kg. Si es con tu peso corporal, dejá 0.',
+  },
+  rir: {
+    titulo: 'RIR (Repeticiones en Reserva)',
+    texto: 'Cuántas repeticiones más podrías haber hecho antes del fallo. RIR 0 = al límite; RIR 2 = te quedaban 2; RIR 4+ = te sobró energía.',
+  },
+  rpe: {
+    titulo: 'RPE (Esfuerzo percibido)',
+    texto: 'Qué tan duro se sintió del 1 al 10. 1 = muy suave; 10 = máximo esfuerzo. Ejemplo: 8 = duro pero controlable.',
+  },
+};
 
 export default function ExerciseCard({ ejercicio, onUpdateEjercicio }) {
   const { isSunlight } = useTheme();
@@ -29,6 +49,9 @@ export default function ExerciseCard({ ejercicio, onUpdateEjercicio }) {
   const [observacion, setObservacion] = useState(ejercicio.observacion || '');
   const [guardandoObs, setGuardandoObs] = useState(false);
   const [obsGuardadaExito, setObsGuardadaExito] = useState(false);
+
+  // Ventanita chica de recordatorio por campo (reps, kg, rir, rpe)
+  const [ayudaCampo, setAyudaCampo] = useState(null);
 
   // Serie específica que el usuario eligió re-editar manualmente
   const [serieEnEdicionId, setSerieEnEdicionId] = useState(null);
@@ -68,6 +91,70 @@ export default function ExerciseCard({ ejercicio, onUpdateEjercicio }) {
     }
   };
 
+  // Abrir/cerrar la ventanita de recordatorio de un campo
+  const alternarAyudaCampo = (campo) => {
+    setAyudaCampo((prev) => (prev === campo ? null : campo));
+  };
+
+  // Posición de la ventanita según la columna del campo
+  const posicionAyudaCampo = (campo) => {
+    if (campo === 'reps') return 'left-0';
+    if (campo === 'kg') return 'right-0';
+    return 'left-1/2 -translate-x-1/2';
+  };
+
+  // Título táctil: al tocar el nombre del dato se abre su explicación
+  const renderTituloAyuda = (campo, texto) => (
+    <button
+      type="button"
+      onClick={() => alternarAyudaCampo(campo)}
+      aria-expanded={ayudaCampo === campo}
+      className={`mx-auto flex items-center justify-center gap-1 text-xs font-black uppercase tracking-wider transition-colors ${
+        isSunlight ? 'text-slate-800 hover:text-blue-800' : 'text-slate-300 hover:text-sky-300'
+      }`}
+    >
+      <span>{texto}</span>
+      <HelpCircle className={`w-3.5 h-3.5 ${
+        ayudaCampo === campo
+          ? isSunlight ? 'text-blue-700' : 'text-sky-400'
+          : isSunlight ? 'text-slate-500' : 'text-slate-400'
+      }`} />
+    </button>
+  );
+
+  // Ventanita chica con la explicación del campo
+  const renderAyudaCampo = (campo) => {
+    if (ayudaCampo !== campo) return null;
+    const datos = AYUDA_CAMPOS[campo];
+    return (
+      <div
+        role="tooltip"
+        className={`absolute top-full mt-2 z-40 w-60 max-w-[calc(100vw-2.5rem)] rounded-2xl border p-3 text-left shadow-2xl animate-fadeIn ${posicionAyudaCampo(campo)} ${
+          isSunlight
+            ? 'bg-white border-slate-300 text-slate-800'
+            : 'bg-[#0c1322] border-slate-600 text-slate-200'
+        }`}
+      >
+        <div className="flex items-start justify-between gap-2">
+          <p className={`text-[10px] font-black uppercase tracking-wider ${isSunlight ? 'text-blue-800' : 'text-sky-400'}`}>
+            {datos.titulo}
+          </p>
+          <button
+            type="button"
+            onClick={() => setAyudaCampo(null)}
+            aria-label="Cerrar ayuda"
+            className={`p-0.5 rounded transition-colors ${
+              isSunlight ? 'text-slate-500 hover:text-slate-900' : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+        <p className="text-[11px] leading-relaxed mt-1 font-medium">{datos.texto}</p>
+      </div>
+    );
+  };
+
   const guardarSerieActiva = async (serie) => {
     const seriesActualizadas = series.map((s) => {
       if (s.id === serie.id) {
@@ -76,6 +163,7 @@ export default function ExerciseCard({ ejercicio, onUpdateEjercicio }) {
       return s;
     });
     setSeries(seriesActualizadas);
+    setAyudaCampo(null);
 
     if (serieEnEdicionId === serie.id) {
       setSerieEnEdicionId(null);
@@ -246,6 +334,10 @@ export default function ExerciseCard({ ejercicio, onUpdateEjercicio }) {
           </div>
         </div>
 
+        <p className={`text-xs font-semibold mt-1 ${isSunlight ? 'text-slate-600' : 'text-slate-400'}`}>
+          Series realizadas: <strong className={isSunlight ? 'text-slate-900' : 'text-slate-200'}>{series.filter((s) => s.completado).length}</strong> de {series.length}
+        </p>
+
         {ejercicio.videoUrl && videoAbierto && (
           <div className="mt-4">
             <VideoPlayer videoUrl={ejercicio.videoUrl} onClose={() => setVideoAbierto(false)} />
@@ -273,6 +365,7 @@ export default function ExerciseCard({ ejercicio, onUpdateEjercicio }) {
             <span>Tip del video: {ejercicio.videoRecomendacion}</span>
           </p>
         )}
+
       </div>
 
       {/* Listado de Series */}
@@ -329,13 +422,15 @@ export default function ExerciseCard({ ejercicio, onUpdateEjercicio }) {
             return (
               <div 
                 key={serie.id} 
-                className={`rounded-2xl p-5 shadow-xl relative overflow-hidden animate-fadeIn border-2 ${
+                className={`rounded-2xl p-5 shadow-xl relative animate-fadeIn border-2 ${
+                  ayudaCampo ? 'overflow-visible z-40' : 'overflow-hidden'
+                } ${
                   isSunlight
                     ? 'bg-slate-50 border-blue-500 text-slate-900'
                     : 'bg-slate-900 border-blue-500/60 text-white shadow-blue-500/5'
                 }`}
               >
-                <div className="absolute top-0 left-0 w-2 h-full bg-blue-600" />
+                <div className="absolute top-0 left-0 w-2 h-full bg-blue-600 rounded-l-2xl" />
                 
                 <div className="flex items-center justify-between mb-4">
                   <h5 className={`text-sm font-black flex items-center gap-2 ${
@@ -358,14 +453,22 @@ export default function ExerciseCard({ ejercicio, onUpdateEjercicio }) {
                   )}
                 </div>
 
+                {/* Fondo invisible para cerrar la ventanita al tocar afuera */}
+                {ayudaCampo && (
+                  <div
+                    className="fixed inset-0 z-30"
+                    onClick={() => setAyudaCampo(null)}
+                    aria-hidden="true"
+                  />
+                )}
+
                 <div className="grid grid-cols-2 gap-4 sm:gap-6 mb-6">
                   {/* Stepper Reps */}
                   <div>
-                    <label className={`block text-xs font-black mb-2 uppercase tracking-wider text-center ${
-                      isSunlight ? 'text-slate-800' : 'text-slate-300'
-                    }`}>
-                      Reps
-                    </label>
+                    <div className="relative mb-2">
+                      {renderTituloAyuda('reps', 'Repeticiones')}
+                      {renderAyudaCampo('reps')}
+                    </div>
                     <div className={`flex items-center justify-between rounded-2xl p-1.5 border ${
                       isSunlight ? 'bg-white border-slate-300 shadow-sm' : 'bg-[#05070c] border-slate-700'
                     }`}>
@@ -399,11 +502,10 @@ export default function ExerciseCard({ ejercicio, onUpdateEjercicio }) {
 
                   {/* Stepper Kilos */}
                   <div>
-                    <label className={`block text-xs font-black mb-2 uppercase tracking-wider text-center ${
-                      isSunlight ? 'text-slate-800' : 'text-slate-300'
-                    }`}>
-                      Kilos
-                    </label>
+                    <div className="relative mb-2">
+                      {renderTituloAyuda('kg', 'Peso (kg)')}
+                      {renderAyudaCampo('kg')}
+                    </div>
                     <div className={`flex items-center justify-between rounded-2xl p-1.5 border ${
                       isSunlight ? 'bg-white border-slate-300 shadow-sm' : 'bg-[#05070c] border-slate-700'
                     }`}>
@@ -438,11 +540,10 @@ export default function ExerciseCard({ ejercicio, onUpdateEjercicio }) {
 
                 {/* Selectores RIR circulares */}
                 <div className="mb-6">
-                  <label className={`block text-xs font-black mb-3 text-center uppercase tracking-wider ${
-                    isSunlight ? 'text-slate-800' : 'text-slate-300'
-                  }`}>
-                    RIR (Repeticiones en Reserva)
-                  </label>
+                  <div className="relative mb-3">
+                    {renderTituloAyuda('rir', 'RIR (Repeticiones en Reserva)')}
+                    {renderAyudaCampo('rir')}
+                  </div>
                   <div className="flex justify-center gap-2.5">
                     {[0, 1, 2, 3, '4+'].map((val) => {
                       const isActive = String(serie.rir) === String(val);
@@ -468,11 +569,10 @@ export default function ExerciseCard({ ejercicio, onUpdateEjercicio }) {
 
                 {/* Slider RPE */}
                 <div className="mb-8">
-                  <label className={`block text-xs font-black mb-3 text-center uppercase tracking-wider ${
-                    isSunlight ? 'text-slate-800' : 'text-slate-300'
-                  }`}>
-                    RPE (Esfuerzo Percibido 1-10)
-                  </label>
+                  <div className="relative mb-3">
+                    {renderTituloAyuda('rpe', 'RPE (Esfuerzo Percibido 1-10)')}
+                    {renderAyudaCampo('rpe')}
+                  </div>
                   <div className="px-2 sm:px-4">
                     <input 
                       type="range" 

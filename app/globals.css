@@ -51,7 +51,7 @@ html {
 }
 
 /* Anclas: evitar que la barra fija superior tape los títulos de sección
-   (ej. #sobre-mi, #galeria, #salud-mental) */
+   (ej. #sobre-mi, #galeria) */
 section[id] {
   scroll-margin-top: 6rem;
 }

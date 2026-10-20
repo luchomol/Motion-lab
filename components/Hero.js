@@ -66,7 +66,7 @@ export default function Hero() {
                 href="/onboarding"
                 className="inline-flex items-center justify-center gap-2.5 px-8 py-4 text-base font-black text-white bg-gradient-to-r from-blue-700 via-blue-600 to-sky-500 hover:from-blue-600 hover:to-sky-400 rounded-full transition-all shadow-xl shadow-blue-600/30 active:scale-95 touch-target"
               >
-                <span>Comenzar Onboarding</span>
+                <span>Comenzar</span>
                 <ArrowRight className="w-5 h-5" />
               </Link>
               <a
