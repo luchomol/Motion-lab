@@ -9,7 +9,14 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
-import { obtenerCheckinsDeStore, obtenerDetalleSesionesDeStore, guardarAlumnoEnStore, obtenerAlumnoDeStore, obtenerAlumnosDeStore } from '@/lib/fallbackStore';
+import {
+  obtenerCheckinsDeStore,
+  obtenerDetalleSesionesDeStore,
+  guardarAlumnoEnStore,
+  obtenerAlumnoDeStore,
+  obtenerAlumnosDeStore,
+  obtenerChequeosBienestarDeStore,
+} from '@/lib/fallbackStore';
 import { ALUMNOS_DEMO } from '@/lib/demoAlumnos';
 import { actualizarAlumno } from '@/lib/actualizarAlumno';
 
@@ -63,9 +70,30 @@ function calcularBienestar(checkins) {
   }
 }
 
+/**
+ * Traduce el último chequeo de bienestar a una alerta simple para la tabla
+ * del entrenador. Es independiente de la fatiga física del entrenamiento.
+ */
+function calcularAlertaMental(chequeos = []) {
+  const ultimo = chequeos[0];
+  if (!ultimo) {
+    return { alertaMental: 'SIN_DATOS', ultimoChequeoBienestar: null };
+  }
+
+  const alertaMental =
+    ultimo.nivelGeneral === 'ALERTA'
+      ? 'ROJA'
+      : ultimo.nivelGeneral === 'ATENCION'
+        ? 'AMARILLA'
+        : 'VERDE';
+
+  return { alertaMental, ultimoChequeoBienestar: ultimo };
+}
+
 export async function GET() {
   try {
     let alumnos = [];
+    let chequeosBienestarDB = [];
 
     if (process.env.DATABASE_URL) {
       try {
@@ -93,6 +121,20 @@ export async function GET() {
           },
           orderBy: { createdAt: 'desc' },
         });
+
+        // Historial de chequeos de bienestar de todos los alumnos. Se usa para
+        // mostrar el estado mental más reciente en la tabla y en la ficha.
+        try {
+          chequeosBienestarDB = await prisma.chequeoBienestar.findMany({
+            orderBy: { fecha: 'desc' },
+            take: 500,
+          });
+        } catch (wellnessError) {
+          console.warn(
+            '⚠️ No se pudo consultar el historial de bienestar (se sigue con el resto del panel):',
+            wellnessError.message
+          );
+        }
 
         // Mapear checkins y calcular alertas para alumnos de base de datos
         alumnos = alumnos.map((alumno) => {
@@ -208,6 +250,34 @@ export async function GET() {
         };
       }
       return { ...alumno, sesionesCompletadas };
+    });
+
+    // Combinar el historial de bienestar de PostgreSQL con el guardado en
+    // memoria y calcular la alerta mental más reciente para cada alumno.
+    alumnos = alumnos.map((alumno) => {
+      const deBaseDeDatos = chequeosBienestarDB.filter(
+        (chequeo) => chequeo.alumnoId === alumno.id
+      );
+      const deMemoria = obtenerChequeosBienestarDeStore(alumno.id);
+      const unicos = new Map();
+
+      [...deBaseDeDatos, ...deMemoria].forEach((chequeo) => {
+        if (chequeo?.id) unicos.set(chequeo.id, chequeo);
+      });
+
+      const chequeosBienestar = [...unicos.values()]
+        .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
+        .slice(0, 5);
+
+      const { alertaMental, ultimoChequeoBienestar } =
+        calcularAlertaMental(chequeosBienestar);
+
+      return {
+        ...alumno,
+        chequeosBienestar,
+        ultimoChequeoBienestar,
+        alertaMental,
+      };
     });
 
     return NextResponse.json({

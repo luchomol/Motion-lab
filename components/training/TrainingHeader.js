@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowLeft, Sun, Moon } from 'lucide-react';
+import { ArrowLeft, Sun, Moon, HeartPulse } from 'lucide-react';
 import MotionLabLogo from '@/components/MotionLabLogo';
 import { useTheme } from '@/components/ThemeProvider';
 
@@ -23,6 +23,16 @@ export default function TrainingHeader({ user = null }) {
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Inicio</span>
+        </Link>
+
+        <Link
+          href="/bienestar"
+          className={`inline-flex items-center gap-1.5 text-xs font-bold transition-colors touch-target ${
+            isSunlight ? 'text-sky-700 hover:text-sky-800' : 'text-sky-300 hover:text-sky-200'
+          }`}
+        >
+          <HeartPulse className="w-4 h-4" />
+          <span>Bienestar</span>
         </Link>
 
         {user && (

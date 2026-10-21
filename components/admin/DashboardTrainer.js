@@ -21,11 +21,43 @@
 import { useState, useEffect } from 'react';
 import { 
   Users, CheckCircle2, Clock, Dumbbell, ShieldCheck, 
-  Search, Eye, Plus, Trash2, ArrowRight, X, Sparkles, Activity, RotateCcw 
+  Search, Eye, Plus, Trash2, ArrowRight, X, Sparkles, Activity, RotateCcw,
+  HeartPulse
 } from 'lucide-react';
 import RoutineBuilder from './RoutineBuilder';
 import QrShareCard from './QrShareCard';
 import { useTheme } from '@/components/ThemeProvider';
+
+const DIMENSIONES_BIENESTAR = [
+  { id: 'descanso', nombre: 'Descanso', color: '#a78bfa' },
+  { id: 'estres', nombre: 'Estrés', color: '#facc15' },
+  { id: 'animo', nombre: 'Ánimo', color: '#22d3ee' },
+  { id: 'energia', nombre: 'Energía', color: '#fb7185' },
+  { id: 'motivacion', nombre: 'Motivación', color: '#60a5fa' },
+];
+
+function parsearRecomendacionesBienestar(valor) {
+  if (Array.isArray(valor)) return valor;
+  if (!valor) return [];
+  try {
+    const parsed = JSON.parse(valor);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function etiquetaNivelMental(nivel) {
+  if (nivel === 'ALERTA') return 'En alerta';
+  if (nivel === 'ATENCION') return 'A fortalecer';
+  return 'En equilibrio';
+}
+
+function colorNivelMental(nivel) {
+  if (nivel === 'ALERTA') return '#fb7185';
+  if (nivel === 'ATENCION') return '#fbbf24';
+  return '#38bdf8';
+}
 
 export default function DashboardTrainer() {
   const { isSunlight } = useTheme();
@@ -364,7 +396,10 @@ export default function DashboardTrainer() {
         : filtro === 'ACTIVOS'
         ? a.estadoPago === 'ACTIVO'
         : filtro === 'ALERTAS'
-        ? a.alertaBienestar === 'ROJA' || a.alertaBienestar === 'AMARILLA'
+        ? a.alertaBienestar === 'ROJA' ||
+          a.alertaBienestar === 'AMARILLA' ||
+          a.alertaMental === 'ROJA' ||
+          a.alertaMental === 'AMARILLA'
         : true;
 
     const textoBusqueda = `${a.nombre} ${a.apellido || ''} ${a.email} ${a.perfilDeportivo?.deporte || ''}`.toLowerCase();
@@ -372,6 +407,12 @@ export default function DashboardTrainer() {
 
     return coincideFiltro && coincideBusqueda;
   });
+
+  const ultimoChequeoMental = alumnoSeleccionado?.ultimoChequeoBienestar || null;
+  const historialMental = alumnoSeleccionado?.chequeosBienestar || [];
+  const recomendacionesMental = parsearRecomendacionesBienestar(
+    ultimoChequeoMental?.recomendaciones
+  );
 
   return (
     <div className="w-full max-w-7xl mx-auto space-y-8">
@@ -456,9 +497,12 @@ export default function DashboardTrainer() {
           <div className={`px-4 py-2.5 rounded-2xl border text-center ${
             isSunlight ? 'bg-red-50 border-red-300' : 'bg-red-500/10 border-red-500/30'
           }`}>
-            <span className={`text-xs block font-bold ${isSunlight ? 'text-red-600' : 'text-red-400'}`}>Alertas Fatiga</span>
+            <span className={`text-xs block font-bold ${isSunlight ? 'text-red-600' : 'text-red-400'}`}>Alertas de Bienestar</span>
             <span className={`text-xl font-black ${isSunlight ? 'text-red-600' : 'text-red-400'}`}>
-              {alumnos.filter((a) => a.alertaBienestar === 'ROJA' || a.alertaBienestar === 'AMARILLA').length}
+              {alumnos.filter((a) =>
+                a.alertaMental === 'ROJA' ||
+                a.alertaMental === 'AMARILLA'
+              ).length}
             </span>
           </div>
         </div>
@@ -478,7 +522,7 @@ export default function DashboardTrainer() {
             { id: 'TODOS', label: 'Todos' },
             { id: 'PENDIENTES', label: 'Pendientes de Pago' },
             { id: 'ACTIVOS', label: 'Alumnos Activos' },
-            { id: 'ALERTAS', label: '🚨 Alertas de Fatiga' },
+            { id: 'ALERTAS', label: '🚨 Alertas de Fatiga y Bienestar' },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -644,6 +688,45 @@ export default function DashboardTrainer() {
                               {(alumno.sesionesCompletadas || 0) === 1 ? 'sesión completada' : 'sesiones completadas'}
                             </span>
                           </div>
+
+                          {/* ALERTA DEL CHEQUEO DE SALUD MENTAL */}
+                          {alumno.alertaMental === 'ROJA' ? (
+                            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl border text-[11px] font-extrabold ${
+                              isSunlight
+                                ? 'bg-rose-50 text-rose-700 border-rose-300'
+                                : 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+                            }`}>
+                              <HeartPulse className="w-3.5 h-3.5" />
+                              <span>Salud mental: en alerta</span>
+                            </div>
+                          ) : alumno.alertaMental === 'AMARILLA' ? (
+                            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl border text-[11px] font-bold ${
+                              isSunlight
+                                ? 'bg-amber-50 text-amber-800 border-amber-300'
+                                : 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                            }`}>
+                              <HeartPulse className="w-3.5 h-3.5" />
+                              <span>Salud mental: a fortalecer</span>
+                            </div>
+                          ) : alumno.alertaMental === 'VERDE' ? (
+                            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl border text-[11px] font-semibold ${
+                              isSunlight
+                                ? 'bg-sky-50 text-sky-700 border-sky-300'
+                                : 'bg-sky-500/15 text-sky-300 border-sky-500/30'
+                            }`}>
+                              <HeartPulse className="w-3.5 h-3.5" />
+                              <span>Salud mental: en equilibrio</span>
+                            </div>
+                          ) : (
+                            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl border text-[11px] font-medium ${
+                              isSunlight
+                                ? 'bg-slate-50 text-slate-500 border-slate-200'
+                                : 'bg-slate-900/60 text-slate-500 border-slate-800'
+                            }`}>
+                              <HeartPulse className="w-3.5 h-3.5" />
+                              <span>Sin chequeo mental</span>
+                            </div>
+                          )}
                         </div>
                       </td>
 
@@ -1077,6 +1160,145 @@ export default function DashboardTrainer() {
                       </p>
                     )}
                   </div>
+                </div>
+
+                {/* SECCIÓN: CHEQUEO DE BIENESTAR / SALUD MENTAL */}
+                <div className={`mb-6 p-5 rounded-2xl border shadow-lg transition-colors ${
+                  isSunlight ? 'bg-sky-50/60 border-sky-300' : 'bg-[#070d19] border-sky-500/30'
+                }`}>
+                  <div className={`flex flex-col sm:flex-row sm:items-start justify-between gap-3 pb-3 border-b ${
+                    isSunlight ? 'border-slate-300' : 'border-slate-800'
+                  }`}>
+                    <div className="flex items-start gap-2">
+                      <HeartPulse className={`w-5 h-5 mt-0.5 shrink-0 ${isSunlight ? 'text-sky-700' : 'text-sky-300'}`} />
+                      <div>
+                        <h3 className={`text-sm font-black uppercase tracking-wider leading-snug ${isSunlight ? 'text-slate-900' : 'text-white'}`}>
+                          Chequeo de Bienestar (Salud Mental)
+                        </h3>
+                        <p className={`text-[11px] mt-1 ${isSunlight ? 'text-slate-600' : 'text-slate-400'}`}>
+                          Descanso, estrés, ánimo, energía y motivación.
+                        </p>
+                      </div>
+                    </div>
+
+                    {ultimoChequeoMental && (
+                      <span
+                        className="max-w-full px-3 py-1 rounded-full border text-xs font-black self-start"
+                        style={{
+                          backgroundColor: `${colorNivelMental(ultimoChequeoMental.nivelGeneral)}1a`,
+                          borderColor: `${colorNivelMental(ultimoChequeoMental.nivelGeneral)}55`,
+                          color: colorNivelMental(ultimoChequeoMental.nivelGeneral),
+                        }}
+                      >
+                        {etiquetaNivelMental(ultimoChequeoMental.nivelGeneral)} · {ultimoChequeoMental.puntajeGeneral}/100
+                      </span>
+                    )}
+                  </div>
+
+                  {ultimoChequeoMental ? (
+                    <>
+                      <div className="flex flex-wrap items-center gap-2 mt-3 text-[11px]">
+                        <span className={`font-bold ${isSunlight ? 'text-slate-700' : 'text-slate-300'}`}>
+                          Último chequeo: {new Date(ultimoChequeoMental.fecha).toLocaleDateString('es-AR', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric',
+                          })}
+                        </span>
+                        <span className={isSunlight ? 'text-slate-400' : 'text-slate-600'}>•</span>
+                        <span className={isSunlight ? 'text-slate-500' : 'text-slate-400'}>
+                          {historialMental.length} {historialMental.length === 1 ? 'registro' : 'registros'}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mt-4">
+                        {DIMENSIONES_BIENESTAR.map((dimension) => {
+                          const puntaje = Number(ultimoChequeoMental[dimension.id]) || 0;
+                          return (
+                            <div
+                              key={dimension.id}
+                              className={`rounded-xl border p-2.5 ${isSunlight ? 'bg-white border-slate-200' : 'bg-slate-900/70 border-slate-800'}`}
+                            >
+                              <div className="flex items-center justify-between gap-1 mb-1.5">
+                                <span className={`text-[10px] font-bold ${isSunlight ? 'text-slate-600' : 'text-slate-400'}`}>
+                                  {dimension.nombre}
+                                </span>
+                                <span className="text-[11px] font-black" style={{ color: dimension.color }}>
+                                  {puntaje}
+                                </span>
+                              </div>
+                              <div className={`h-1.5 rounded-full overflow-hidden ${isSunlight ? 'bg-slate-200' : 'bg-slate-800'}`}>
+                                <div
+                                  className="h-full rounded-full transition-all"
+                                  style={{ width: `${puntaje}%`, backgroundColor: dimension.color }}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {recomendacionesMental.length > 0 && (
+                        <div className="grid sm:grid-cols-2 gap-2 mt-4">
+                          {recomendacionesMental.map((recomendacion, index) => (
+                            <div
+                              key={`${recomendacion.id || index}-${index}`}
+                              className={`rounded-xl border p-3 ${isSunlight ? 'bg-white border-slate-200' : 'bg-slate-900/70 border-slate-800'}`}
+                            >
+                              <strong className={`text-[11px] font-black block ${isSunlight ? 'text-slate-800' : 'text-slate-200'}`}>
+                                {recomendacion.titulo}
+                              </strong>
+                              <p className={`text-[11px] leading-relaxed mt-1 ${isSunlight ? 'text-slate-600' : 'text-slate-400'}`}>
+                                {recomendacion.texto}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {ultimoChequeoMental.comentario && (
+                        <div className={`mt-3 rounded-xl border p-3 ${isSunlight ? 'bg-white border-sky-200' : 'bg-slate-900/70 border-sky-500/20'}`}>
+                          <strong className={`text-[11px] font-black block ${isSunlight ? 'text-sky-800' : 'text-sky-300'}`}>
+                            Comentario del alumno:
+                          </strong>
+                          <p className={`text-[11px] leading-relaxed mt-1 ${isSunlight ? 'text-slate-700' : 'text-slate-300'}`}>
+                            “{ultimoChequeoMental.comentario}”
+                          </p>
+                        </div>
+                      )}
+
+                      {historialMental.length > 1 && (
+                        <div className={`mt-4 pt-3 border-t ${isSunlight ? 'border-slate-300' : 'border-slate-800'}`}>
+                          <span className={`text-[10px] font-bold uppercase tracking-wider block mb-2 ${isSunlight ? 'text-slate-500' : 'text-slate-500'}`}>
+                            Chequeos anteriores
+                          </span>
+                          <div className="flex flex-wrap gap-2">
+                            {historialMental.slice(1, 4).map((chequeo) => (
+                              <span
+                                key={chequeo.id}
+                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[10px] font-bold ${
+                                  isSunlight ? 'bg-white border-slate-200 text-slate-600' : 'bg-slate-900/70 border-slate-800 text-slate-400'
+                                }`}
+                              >
+                                {new Date(chequeo.fecha).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })}
+                                <span style={{ color: colorNivelMental(chequeo.nivelGeneral) }}>
+                                  {chequeo.puntajeGeneral}/100
+                                </span>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <p className={`text-xs italic mt-3 p-3 rounded-xl border ${
+                      isSunlight
+                        ? 'text-slate-600 bg-white border-slate-200'
+                        : 'text-slate-500 bg-slate-900/40 border-slate-800'
+                    }`}>
+                      Este alumno todavía no completó el chequeo de bienestar. Cuando lo haga, vas a ver acá su resultado y sus recomendaciones.
+                    </p>
+                  )}
                 </div>
               </>
             )}

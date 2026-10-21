@@ -9,7 +9,7 @@
  */
 
 import { useState } from 'react';
-import { Menu, X, Dumbbell, ShieldAlert, LogIn, Sun, Moon } from 'lucide-react';
+import { Menu, X, Dumbbell, ShieldAlert, LogIn, Sun, Moon, HeartPulse } from 'lucide-react';
 import Link from 'next/link';
 import MotionLabLogo from './MotionLabLogo';
 import { useTheme } from './ThemeProvider';
@@ -72,6 +72,15 @@ export default function Navbar() {
             >
               Resultados
             </a>
+            <Link
+              href="/bienestar"
+              className={`transition-colors flex items-center gap-1.5 font-semibold ${
+                isSunlight ? 'text-sky-700 hover:text-sky-800' : 'text-sky-300 hover:text-sky-200'
+              }`}
+            >
+              <HeartPulse className="w-4 h-4" />
+              Bienestar
+            </Link>
           </div>
 
           {/* BOTONES DE ACCIÓN + TOGGLE MODO SOLEADO */}
@@ -208,6 +217,16 @@ export default function Navbar() {
           >
             Resultados MOTION LAB
           </a>
+          <Link
+            href="/bienestar"
+            onClick={() => setMenuAbierto(false)}
+            className={`block text-base font-semibold py-2.5 flex items-center gap-2.5 touch-target ${
+              isSunlight ? 'text-sky-700 hover:text-sky-800' : 'text-sky-300 hover:text-sky-200'
+            }`}
+          >
+            <HeartPulse className="w-5 h-5" />
+            <span>Chequeo de Bienestar</span>
+          </Link>
         </div>
       )}
     </nav>

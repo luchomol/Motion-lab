@@ -10,9 +10,11 @@
  * - Soporte de Modo Soleado de Alto Contraste para entrenar al aire libre bajo el sol.
  */
 
+import Link from 'next/link';
 import { 
   Calendar, Clock, ArrowRight, CheckCircle2, 
-  RotateCcw, Sparkles, Flame, PlayCircle, Edit3, Trophy, ChevronRight 
+  RotateCcw, Sparkles, Flame, PlayCircle, Edit3, Trophy, ChevronRight,
+  HeartPulse
 } from 'lucide-react';
 import { useTheme } from '@/components/ThemeProvider';
 import WatchLinkCard from './WatchLinkCard';
@@ -70,6 +72,51 @@ export default function StudentHub({
           </div>
         </div>
       </div>
+
+      {/* ================================================================
+          CHEQUEO DE BIENESTAR: DESCANSO, ESTRÉS, ÁNIMO, ENERGÍA Y MOTIVACIÓN
+         ================================================================ */}
+      <Link
+        href="/bienestar"
+        className={`group flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-3xl border transition-all hover:-translate-y-0.5 ${
+          isSunlight
+            ? 'bg-sky-50 border-sky-300 shadow-sm hover:shadow-md'
+            : 'bg-gradient-to-r from-sky-950/40 via-[#0c1424] to-[#05070c] border-sky-500/30 shadow-lg hover:shadow-sky-500/10'
+        }`}
+      >
+        <div className="flex items-start gap-3.5">
+          <span className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${
+            isSunlight ? 'bg-sky-100 text-sky-700' : 'bg-sky-500/15 text-sky-300'
+          }`}>
+            <HeartPulse className="w-6 h-6" />
+          </span>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className={`text-base sm:text-lg font-black ${isSunlight ? 'text-slate-950' : 'text-white'}`}>
+                Chequeo de Bienestar
+              </h2>
+              <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border ${
+                isSunlight
+                  ? 'bg-white text-sky-700 border-sky-300'
+                  : 'bg-sky-500/10 text-sky-300 border-sky-500/30'
+              }`}>
+                10 preguntas · 2 min
+              </span>
+            </div>
+            <p className={`text-xs mt-1 leading-relaxed ${isSunlight ? 'text-slate-700' : 'text-slate-300'}`}>
+              Contanos cómo venís de descanso, estrés, ánimo, energía y motivación.
+              Recibí tus resultados y recomendaciones al instante.
+            </p>
+          </div>
+        </div>
+
+        <span className={`inline-flex items-center gap-1.5 text-xs font-black shrink-0 self-end sm:self-center ${
+          isSunlight ? 'text-sky-700' : 'text-sky-300'
+        }`}>
+          Hacer el chequeo
+          <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+        </span>
+      </Link>
 
       {/* ================================================================
           TARJETA HERO: SUGERIDO PARA HOY (O SEMANA CUMPLIDA)
