@@ -114,7 +114,8 @@ export async function POST(request) {
         peso: pesoNumero,
         altura: alturaNumero,
         lesiones: texto(lesiones) || 'Sin lesiones reportadas',
-        estadoPago: 'PENDIENTE',
+        // No tocamos estadoPago: un alumno existente conserva su estado actual.
+        // Los usuarios nuevos de Google ya se crean como PENDIENTE en el login.
         tipoPlan: tipoPlan === 'PREMIUM' ? 'PREMIUM' : 'BASE',
         perfilDeportivo: {
           upsert: {
@@ -143,7 +144,7 @@ export async function POST(request) {
 
     return NextResponse.json({
       success: true,
-      mensaje: '¡Cuenta y perfil deportivo creados exitosamente! Estado: Pendiente de pago.',
+      mensaje: '¡Cuenta y perfil deportivo guardados exitosamente!',
       usuario: {
         id: usuario.id,
         nombre: usuario.nombre,
