@@ -296,8 +296,8 @@ export default function Wizard() {
     if (googleDisponible !== true) {
       setErrorMsg(
         googleDisponible === false
-          ? 'El acceso con Google todavía no está configurado. Agregá GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET en Vercel para activarlo.'
-          : 'Estamos verificando la configuración de Google. Intentá de nuevo en un segundo.'
+          ? 'El acceso con Google estará disponible próximamente. Mientras tanto, podés crear tu cuenta con tu email.'
+          : 'Estamos verificando el acceso con Google. Intentá de nuevo en un segundo.'
       );
       return;
     }
@@ -826,7 +826,7 @@ export default function Wizard() {
                 <button
                   type="button"
                   onClick={iniciarConGoogle}
-                  disabled={googleCargando || cargando}
+                  disabled={googleCargando || cargando || googleDisponible === false}
                   className={`w-full py-3.5 px-4 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-sm flex items-center justify-center gap-3 shadow-md transition-all hover:scale-[1.01] border disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 ${isSunlight ? 'border-slate-300' : 'border-transparent'}`}
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -847,12 +847,16 @@ export default function Wizard() {
                       d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
                     />
                   </svg>
-                  <span>Continuar con Google</span>
+                  <span>
+                    {googleDisponible === false
+                      ? 'Google (próximamente)'
+                      : 'Continuar con Google'}
+                  </span>
                 </button>
 
                 {googleDisponible === false && (
-                  <p className={`text-[11px] text-center leading-relaxed ${isSunlight ? 'text-amber-700' : 'text-amber-400'}`}>
-                    Google todavía no está configurado. Podés crear tu cuenta con email o pedirle a Matías que active el acceso con Google.
+                  <p className={`text-[11px] text-center leading-relaxed ${isSunlight ? 'text-slate-600' : 'text-slate-400'}`}>
+                    El acceso con Google estará disponible próximamente. Mientras tanto, podés crear tu cuenta con tu email.
                   </p>
                 )}
 

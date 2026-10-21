@@ -70,8 +70,8 @@ export default function LoginPage() {
     if (googleDisponible !== true) {
       setError(
         googleDisponible === false
-          ? 'El acceso con Google todavía no está configurado. Agregá GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET en Vercel para activarlo.'
-          : 'Estamos verificando la configuración de Google. Intentá de nuevo en un segundo.'
+          ? 'El acceso con Google estará disponible próximamente. Mientras tanto, ingresá con tu email.'
+          : 'Estamos verificando el acceso con Google. Intentá de nuevo en un segundo.'
       );
       return;
     }
@@ -149,7 +149,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={iniciarConGoogle}
-                disabled={googleCargando || loading}
+                disabled={googleCargando || loading || googleDisponible === false}
                 className={`w-full py-3.5 px-4 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-sm flex items-center justify-center gap-3 shadow-md transition-all hover:scale-[1.01] border disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 ${
                   isSunlight ? 'border-slate-300' : 'border-slate-200'
                 }`}
@@ -177,13 +177,17 @@ export default function LoginPage() {
                   </svg>
                 )}
                 <span>
-                  {googleCargando ? 'Conectando con Google...' : 'Continuar con Google'}
+                  {googleCargando
+                    ? 'Conectando con Google...'
+                    : googleDisponible === false
+                      ? 'Google (próximamente)'
+                      : 'Continuar con Google'}
                 </span>
               </button>
 
               {googleDisponible === false && (
-                <p className={`text-[11px] mt-2 leading-relaxed ${isSunlight ? 'text-amber-700' : 'text-amber-400'}`}>
-                  Google todavía no está configurado. Agregá GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET en Vercel para activarlo.
+                <p className={`text-[11px] mt-2 leading-relaxed ${isSunlight ? 'text-slate-600' : 'text-slate-400'}`}>
+                  El acceso con Google estará disponible próximamente. Mientras tanto, ingresá con tu email.
                 </p>
               )}
             </div>
