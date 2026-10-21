@@ -8,10 +8,12 @@
  * lógica condicional y registro final conectado a NextAuth y WhatsApp.
  */
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { signIn, getProviders } from 'next-auth/react';
 import { 
   Zap, Crown, ArrowRight, ArrowLeft, Check, Target, Dumbbell, 
-  Activity, Heart, ShieldAlert, Sparkles, MessageCircle, Lock, Mail, User, Phone 
+  Activity, Heart, ShieldAlert, Sparkles, MessageCircle, Lock, Mail, User, Phone,
+  Loader2
 } from 'lucide-react';
 import MotionLabLogo from '@/components/MotionLabLogo';
 import { useTheme } from '@/components/ThemeProvider';
@@ -56,6 +58,9 @@ export default function Wizard() {
   const [errorMsg, setErrorMsg] = useState('');
   const [registroCompletado, setRegistroCompletado] = useState(false);
   const [whatsappLink, setWhatsappLink] = useState('');
+  const [googleCargando, setGoogleCargando] = useState(false);
+  const [googleDisponible, setGoogleDisponible] = useState(null);
+  const googleProcesado = useRef(false);
 
   // Objeto central con todos los datos recolectados
   const [formData, setFormData] = useState({
@@ -83,6 +88,98 @@ export default function Wizard() {
     email: '',
     password: '',
   });
+
+  // Detectamos si el proveedor de Google está configurado en el servidor.
+  useEffect(() => {
+    let activo = true;
+
+    getProviders()
+      .then((providers) => {
+        if (activo) setGoogleDisponible(Boolean(providers?.google));
+      })
+      .catch(() => {
+        if (activo) setGoogleDisponible(false);
+      });
+
+    return () => {
+      activo = false;
+    };
+  }, []);
+
+  // Al volver de Google, recuperamos los datos del Wizard y completamos la
+  // ficha deportiva del usuario autenticado.
+  useEffect(() => {
+    if (googleProcesado.current) return;
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('google') !== '1') return;
+
+    let datosGuardados = null;
+    try {
+      const crudo = localStorage.getItem('motionlab_onboarding_google');
+      if (crudo) datosGuardados = JSON.parse(crudo);
+    } catch {
+      datosGuardados = null;
+    }
+
+    if (!datosGuardados) {
+      setErrorMsg(
+        'No encontramos los datos de tu registro. Volvé a completar el formulario.'
+      );
+      return;
+    }
+
+    googleProcesado.current = true;
+    setGoogleCargando(true);
+
+    (async () => {
+      try {
+        const sessionRes = await fetch('/api/auth/session');
+        const session = await sessionRes.json();
+
+        if (!session?.user?.email) {
+          throw new Error(
+            'No pudimos validar tu sesión de Google. Volvé a intentarlo.'
+          );
+        }
+
+        const respuesta = await fetch('/api/auth/complete-google-onboarding', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...datosGuardados,
+            email: session.user.email,
+          }),
+        });
+
+        const data = await respuesta.json();
+
+        if (!respuesta.ok || !data.success) {
+          throw new Error(data.error || 'No pudimos completar tu registro.');
+        }
+
+        localStorage.removeItem('motionlab_onboarding_google');
+        setFormData((prev) => ({
+          ...prev,
+          ...datosGuardados,
+          nombre: data.usuario?.nombre || prev.nombre,
+          apellido: data.usuario?.apellido || prev.apellido,
+          email: data.usuario?.email || session.user.email || prev.email,
+        }));
+        setWhatsappLink(data.whatsappUrl);
+        setRegistroCompletado(true);
+        window.history.replaceState({}, '', '/onboarding');
+      } catch (err) {
+        console.error('Error al completar el registro con Google:', err);
+        setErrorMsg(
+          err.message ||
+            'No pudimos completar tu registro con Google. Intentá de nuevo.'
+        );
+      } finally {
+        setGoogleCargando(false);
+      }
+    })();
+  }, []);
 
   // ------------------------------------------------------------------------
   // LÓGICA CONDICIONAL: ¿Debe mostrarse el Paso 3 (RM y Puntos Débiles)?
@@ -192,12 +289,61 @@ export default function Wizard() {
     }
   };
 
-  // Registro social con Google (simulación / NextAuth)
-  const iniciarConGoogle = () => {
-    // Si estuviéramos en producción con Google Client ID configurado:
-    // signIn('google', { callbackUrl: '/onboarding' });
-    alert('Redirigiendo a autenticación segura de Google... (Configura GOOGLE_CLIENT_ID en producción)');
+  // Registro social real con Google + NextAuth
+  const iniciarConGoogle = async () => {
+    setErrorMsg('');
+
+    if (googleDisponible !== true) {
+      setErrorMsg(
+        googleDisponible === false
+          ? 'El acceso con Google todavía no está configurado. Agregá GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET en Vercel para activarlo.'
+          : 'Estamos verificando la configuración de Google. Intentá de nuevo en un segundo.'
+      );
+      return;
+    }
+
+    setGoogleCargando(true);
+
+    try {
+      const { password, ...datosParaGuardar } = formData;
+      localStorage.setItem(
+        'motionlab_onboarding_google',
+        JSON.stringify({ ...datosParaGuardar, password: '' })
+      );
+
+      await signIn('google', {
+        callbackUrl: '/onboarding?google=1',
+      });
+    } catch (err) {
+      console.error('Error al iniciar con Google:', err);
+      localStorage.removeItem('motionlab_onboarding_google');
+      setGoogleCargando(false);
+      setErrorMsg(
+        'No pudimos abrir Google. Revisá la configuración e intentá de nuevo.'
+      );
+    }
   };
+
+  // Pantalla de espera mientras Google autentica y guardamos la ficha.
+  if (googleCargando && !registroCompletado) {
+    return (
+      <div className="w-full max-w-2xl mx-auto">
+        <div className={`border rounded-3xl p-10 text-center card-glow ${tema.panel}`}>
+          <Loader2
+            className={`w-12 h-12 mx-auto animate-spin ${
+              isSunlight ? 'text-sky-600' : 'text-sky-400'
+            }`}
+          />
+          <h2 className={`text-2xl font-black mt-5 ${tema.titulo}`}>
+            Conectando con Google...
+          </h2>
+          <p className={`text-sm mt-2 ${tema.parrafo}`}>
+            Estamos validando tu cuenta y guardando tu ficha deportiva.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-2xl mx-auto">
@@ -680,7 +826,8 @@ export default function Wizard() {
                 <button
                   type="button"
                   onClick={iniciarConGoogle}
-                  className={`w-full py-3.5 px-4 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-sm flex items-center justify-center gap-3 shadow-md transition-all hover:scale-[1.01] border ${isSunlight ? 'border-slate-300' : 'border-transparent'}`}
+                  disabled={googleCargando || cargando}
+                  className={`w-full py-3.5 px-4 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-sm flex items-center justify-center gap-3 shadow-md transition-all hover:scale-[1.01] border disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 ${isSunlight ? 'border-slate-300' : 'border-transparent'}`}
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
                     <path
@@ -702,6 +849,12 @@ export default function Wizard() {
                   </svg>
                   <span>Continuar con Google</span>
                 </button>
+
+                {googleDisponible === false && (
+                  <p className={`text-[11px] text-center leading-relaxed ${isSunlight ? 'text-amber-700' : 'text-amber-400'}`}>
+                    Google todavía no está configurado. Podés crear tu cuenta con email o pedirle a Matías que active el acceso con Google.
+                  </p>
+                )}
 
                 {/* DIVISOR VISUAL */}
                 <div className="flex items-center gap-3">

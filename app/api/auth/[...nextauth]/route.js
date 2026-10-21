@@ -3,8 +3,9 @@
  * CONFIGURACIÓN DE NEXTAUTH (app/api/auth/[...nextauth]/route.js)
  * ========================================================================
  * Maneja la autenticación social (Google OAuth) y tradicional (Email / Password).
- * Utiliza PrismaAdapter para persistir usuarios, cuentas y sesiones en PostgreSQL.
- * 
+ * Usa sesiones JWT y persiste/actualiza el usuario de Google manualmente en
+ * PostgreSQL desde el callback `jwt`, sin depender del adaptador estándar.
+ *
  * ¿CÓMO FUNCIONA LA SESIÓN CON CREDENTIALS Y JWT?
  * Cuando se usa el proveedor de credenciales (email y contraseña), NextAuth requiere
  * usar la estrategia 'jwt' (JSON Web Token) para la sesión.
@@ -15,25 +16,35 @@
 import NextAuth from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import bcrypt from 'bcryptjs';
 import prisma from '@/lib/prisma';
 
-export const authOptions = {
-  adapter: PrismaAdapter(prisma),
+const googleEstaConfigurado = Boolean(
+  process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+);
 
+const googleProvider = googleEstaConfigurado
+  ? GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      allowDangerousEmailAccountLinking: true,
+      authorization: {
+        params: {
+          prompt: 'select_account',
+        },
+      },
+    })
+  : null;
+
+export const authOptions = {
   session: {
     // Usamos estrategia JWT para compatibilidad total con Credentials y Google
     strategy: 'jwt',
   },
 
   providers: [
-    // 1. PROVEEDOR GOOGLE OAUTH
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || 'DEMO_GOOGLE_CLIENT_ID',
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'DEMO_GOOGLE_CLIENT_SECRET',
-      allowDangerousEmailAccountLinking: true,
-    }),
+    // 1. PROVEEDOR GOOGLE OAUTH (solo si las credenciales están configuradas)
+    ...(googleProvider ? [googleProvider] : []),
 
     // 2. PROVEEDOR TRADICIONAL (Email y Contraseña)
     CredentialsProvider({
@@ -186,7 +197,55 @@ export const authOptions = {
 
   callbacks: {
     // El callback 'jwt' se ejecuta cuando se crea o actualiza el token
-    async jwt({ token, user, trigger, session }) {
+    async jwt({ token, user, account, trigger, session }) {
+      // Alta / ingreso con Google: creamos o recuperamos el usuario en nuestra
+      // tabla `usuarios` y usamos siempre el id interno de PostgreSQL.
+      if (user && account?.provider === 'google') {
+        try {
+          const email = user.email?.toLowerCase().trim();
+          if (!email) {
+            throw new Error('Google no devolvió un correo electrónico.');
+          }
+
+          let usuarioDb = await prisma.usuario.findUnique({
+            where: { email },
+          });
+
+          if (!usuarioDb) {
+            const nombreCompleto = (user.name || email.split('@')[0]).trim();
+            const [nombre, ...apellidoPartes] = nombreCompleto.split(/\s+/);
+
+            usuarioDb = await prisma.usuario.create({
+              data: {
+                nombre: nombre || 'Alumno',
+                apellido: apellidoPartes.join(' '),
+                email,
+                image: user.image || null,
+                emailVerified: new Date(),
+                rol: 'ALUMNO',
+                estadoPago: 'PENDIENTE',
+                tipoPlan: 'BASE',
+              },
+            });
+          }
+
+          token.id = usuarioDb.id;
+          token.rol = usuarioDb.rol || 'ALUMNO';
+          token.estadoPago = usuarioDb.estadoPago || 'PENDIENTE';
+          token.tipoPlan = usuarioDb.tipoPlan || 'BASE';
+          token.name = `${usuarioDb.nombre} ${usuarioDb.apellido || ''}`.trim();
+          token.email = usuarioDb.email;
+          if (usuarioDb.image) token.picture = usuarioDb.image;
+
+          return token;
+        } catch (error) {
+          console.error('No se pudo registrar/recuperar el usuario de Google:', error);
+          throw new Error(
+            'No pudimos crear tu cuenta con Google. Intentá de nuevo.'
+          );
+        }
+      }
+
       if (user) {
         token.id = user.id;
         token.rol = user.rol || 'ALUMNO';

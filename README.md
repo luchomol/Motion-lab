@@ -135,6 +135,40 @@ Cuando el alumno presiona "Ver mi Diagnóstico":
 
 ---
 
+## 🔐 Cómo Activar el Ingreso con Google
+
+El botón **Continuar con Google** ya está integrado en el login y en el paso final del onboarding. Para que funcione en producción, hay que crear un cliente OAuth en Google Cloud y cargar dos variables en Vercel:
+
+1. Entrá a [Google Cloud Console](https://console.cloud.google.com/) con la cuenta de Google que va a administrar el acceso.
+2. Creá un proyecto (por ejemplo, `Motion Lab`).
+3. Configurá la pantalla de consentimiento OAuth:
+   - Tipo: **External**.
+   - Completá nombre de la app, correo de soporte y datos de contacto.
+   - En **Test users**, agregá los correos que van a probar el ingreso mientras la app esté en modo testing.
+4. Andá a **Credentials → Create Credentials → OAuth client ID**:
+   - Tipo: **Web application**.
+   - **Authorized JavaScript origins:**
+     - `https://motion-lab-main.vercel.app`
+     - `http://localhost:3000`
+   - **Authorized redirect URIs:**
+     - `https://motion-lab-main.vercel.app/api/auth/callback/google`
+     - `http://localhost:3000/api/auth/callback/google`
+5. Copiá el **Client ID** y el **Client Secret**.
+6. En Vercel, entrá al proyecto → **Settings → Environment Variables** y agregá:
+   - `GOOGLE_CLIENT_ID`
+   - `GOOGLE_CLIENT_SECRET`
+   Aplicalas a **Production**, **Preview** y **Development**.
+7. Para probar en tu computadora, agregalas también a `.env.local`:
+   ```env
+   GOOGLE_CLIENT_ID="tu-client-id.apps.googleusercontent.com"
+   GOOGLE_CLIENT_SECRET="tu-client-secret"
+   ```
+8. Volvé a desplegar. Cuando las credenciales estén presentes, el botón de Google deja de mostrar el aviso de configuración y abre la pantalla real de Google.
+
+> Si la app queda en modo **Testing**, sólo los correos agregados como test users pueden ingresar. Para abrir el acceso a cualquier alumno, publicá la pantalla de consentimiento (los permisos básicos de perfil y email no requieren revisión sensible).
+
+---
+
 ## ☁️ Cómo Desplegar en Vercel (Poner tu Web en Internet)
 
 1. Sube este proyecto a tu cuenta de **GitHub**.
